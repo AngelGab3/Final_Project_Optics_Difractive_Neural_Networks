@@ -16,7 +16,7 @@ de aprendizaje \num{e-3} y 20 épocas. Cada caso tarda unos \SI{2.5}{min} en un 
 cuatro núcleos. \Cref{tab:fig6} compara las precisiones con las del artículo y \cref{fig:fig6b}
 sitúa los casos respecto a la curva \eqref{eq:dmin}.
 
-\begin{table}[htb]
+\begin{table}[htbp]
 \centering
 \caption[Reproducción de la Fig.~6(c) del artículo]{Precisión de prueba de la red
 reducida ($80\times80$) en los casos de la Fig.~6(c) de \textcite{chen2021}.}
@@ -34,7 +34,7 @@ Caso & $d_f$ ($\lambda$) & $D$ ($\lambda$) & $D/\Dmin$ & Artículo (\%) & Este t
 \end{tabular}
 \end{table}
 
-\begin{figure}[htb]
+\begin{figure}[htbp]
 \centering
 \includegraphics[width=0.62\textwidth]{e_fig6b_curva.png}
 \caption[Curva de conectividad y casos de prueba]{Reproducción de la Fig.~6(b) de
@@ -43,15 +43,15 @@ casos. Se marcan los dos valores del caso~3 que aparecen en el artículo.}
 \label{fig:fig6b}
 \end{figure}
 
-\begin{figure}[htb]
+\begin{figure}[htbp]
 \centering
-\begin{subfigure}{0.48\textwidth}\centering
+\begin{subfigure}{0.45\textwidth}\centering
   \includegraphics[width=\textwidth]{confusion_caso1.png}\caption{Caso 1}\end{subfigure}\hfill
-\begin{subfigure}{0.48\textwidth}\centering
+\begin{subfigure}{0.45\textwidth}\centering
   \includegraphics[width=\textwidth]{confusion_caso2.png}\caption{Caso 2}\end{subfigure}\\[4pt]
-\begin{subfigure}{0.48\textwidth}\centering
+\begin{subfigure}{0.45\textwidth}\centering
   \includegraphics[width=\textwidth]{confusion_caso3_tabla.png}\caption{Caso 3 (valor de la tabla)}\end{subfigure}\hfill
-\begin{subfigure}{0.48\textwidth}\centering
+\begin{subfigure}{0.45\textwidth}\centering
   \includegraphics[width=\textwidth]{confusion_caso4.png}\caption{Caso 4}\end{subfigure}
 \caption[Matrices de confusión de los casos de la Fig.~6]{Matrices de confusión sobre las
 500 imágenes de prueba, equivalentes a las Figs.~6(d)--(g) del artículo. En el caso~4 las
@@ -66,6 +66,7 @@ neurona. Cada capa sólo cambia la fase local, y una máscara de solo fase no mo
 intensidad local; la distribución de intensidad en la salida es prácticamente la de la
 entrada, sin importar cómo se entrenen las fases.
 
+\FloatBarrier
 \section{Inconsistencias en el artículo}\label{sec:inconsistencias}
 
 \begin{enumerate}
@@ -91,16 +92,16 @@ El artículo valida su criterio con cuatro puntos. Para ver dónde se pierde rea
 conectividad, se barrió $D/\Dmin$ de $10^{-3}$ a 3 para tres tamaños de neurona, con 20 épocas
 por punto (\cref{fig:barrido,tab:barrido}).
 
-\begin{figure}[htb]
+\begin{figure}[htbp]
 \centering
-\includegraphics[width=0.75\textwidth]{sweep.png}
+\includegraphics[width=0.72\textwidth]{sweep.png}
 \caption[Barrido de conectividad]{Precisión de prueba en función de $D/\Dmin$ para
 $d_f=1\lambda$, $6\lambda$ y $12\lambda$ ($\sqrt N=80$, 5 capas, 20 épocas). Las curvas coinciden y
 la transición ocurre entre $0.03$ y $0.1\,\Dmin$, no en $D=\Dmin$.}
 \label{fig:barrido}
 \end{figure}
 
-\begin{table}[htb]
+\begin{table}[htbp]
 \centering
 \caption{Precisión de prueba (\%) del barrido de conectividad (5 capas, 20 épocas).}
 \label{tab:barrido}
@@ -121,10 +122,10 @@ $d_f=12\lambda$ & 15.0 & 16.4 & 26.2 & 52.6 & 88.4 & 89.8 & 89.2 & 86.6\\
   $12\lambda$ los resultados son prácticamente \emph{idénticos}, como predice \cref{prop:fresnel}: ambos
   sistemas tienen el mismo número de Fresnel por neurona y son ópticamente equivalentes. Con
   $d_f=1\lambda$, fuera del régimen paraxial, la diferencia sigue siendo menor a un punto
-  en la zona de transición y alcanza hasta \SI{2.2}{puntos} en $D=3\,\Dmin$.
+  en la zona de transición y alcanza hasta \num{2.2}~puntos en $D=3\,\Dmin$.
   \item \textbf{El criterio es suficiente pero unas diez veces más estricto de lo necesario.}
   Con $D=0.1\,\Dmin$ ya se alcanza el \SI{88.4}{\percent} (para $6\lambda$ y $12\lambda$), a sólo
-  \SI{1.4}{puntos} del máximo en $0.3\,\Dmin$ (\SI{89.8}{\percent}).
+  \num{1.4}~puntos del máximo en $0.3\,\Dmin$ (\SI{89.8}{\percent}).
   \item \textbf{Pasarse del criterio empeora.} En $D=3\,\Dmin$ la precisión baja a
   \SIrange{86.4}{88.6}{\percent} por la luz que escapa fuera de los bordes de las capas.
 \end{enumerate}
@@ -140,9 +141,9 @@ Para comprobar esta hipótesis de \emph{conectividad acumulada}, se repitió el 
 $d_f=6\lambda$ y variando el número de capas difractivas $L\in\{1,3,5,8\}$ con 20 épocas por
 punto (\cref{fig:barrido-capas,tab:barrido-capas}).
 
-\begin{figure}[htb]
+\begin{figure}[htbp]
 \centering
-\includegraphics[width=0.78\textwidth]{sweep_layers.png}
+\includegraphics[width=0.72\textwidth]{sweep_layers.png}
 \caption[Barrido de conectividad por número de capas]{Precisión de prueba en función de
 $D/\Dmin$ para $L\in\{1,3,5,8\}$ capas ($d_f=6\lambda$, $\sqrt N=80$, 20 épocas). Las líneas
 verticales punteadas de cada color indican el umbral estimado $D/\Dmin=1/(L+1)$. Al aumentar el
@@ -150,7 +151,7 @@ número de capas, la curva de transición se desplaza sistemáticamente hacia di
 \label{fig:barrido-capas}
 \end{figure}
 
-\begin{table}[htb]
+\begin{table}[htbp]
 \centering
 \caption{Precisión de prueba (\%) variando el número de capas $L$ ($d_f=6\lambda$, 20 épocas).}
 \label{tab:barrido-capas}
@@ -185,11 +186,12 @@ Los resultados confirman directamente la hipótesis y revelan dos efectos acopla
   $L=8$ en $D=0.3\,\Dmin$.
 \end{enumerate}
 
+\FloatBarrier
 \section{Funcionamiento de la red entrenada}\label{sec:funcionamiento}
 
 \Cref{fig:fases,fig:ejemplos,fig:corte} muestran la red del caso~2 una vez entrenada.
 
-\begin{figure}[htb]
+\begin{figure}[htbp]
 \centering
 \includegraphics[width=\textwidth]{fases.png}
 \caption[Fases entrenadas]{Fases de las cinco capas entrenadas (caso~2), equivalentes a la
@@ -197,7 +199,7 @@ Fig.~1(b) del artículo.}
 \label{fig:fases}
 \end{figure}
 
-\begin{figure}[htb]
+\begin{figure}[htbp]
 \centering
 \includegraphics[width=0.9\textwidth]{fig3_ejemplos.png}
 \caption[Ejemplos de clasificación]{Objeto de entrada, intensidad en el plano de salida con
@@ -205,7 +207,7 @@ los detectores y distribución de energía entre detectores, como en la Fig.~3 d
 \label{fig:ejemplos}
 \end{figure}
 
-\begin{figure}[htb]
+\begin{figure}[htbp]
 \centering
 \includegraphics[width=\textwidth]{corte_xz.png}
 \caption[Corte longitudinal de la intensidad]{Intensidad en el plano $y=0$ a lo largo de
@@ -229,21 +231,22 @@ El corte longitudinal $x\text{--}z$ en el plano $y=0$ (\cref{fig:corte}) ilustra
 espacial para un dígito~3. En $z=0$, la luz atraviesa únicamente los trazos binarios del
 dígito en la región central ($|x|\lesssim\SI{0.06}{mm}$) y se expande por difracción en forma
 de abanico hasta alcanzar la primera máscara (\texttt{L1}, $z\approx\SI{3.6}{mm}$). A lo largo
-de \texttt{L1}--\texttt{L4} ($z\in[3.6,\,14.5]\,\si{mm}$), la modulación de fase redirige el
+de \texttt{L1}--\texttt{L4} ($z\in[3.6,\,14.4]\,\si{mm}$), la modulación de fase redirige el
 frente de onda para contener la energía dentro de la abertura finita y canalizarla mediante
 interferencia constructiva en trayectorias oblicuas bien definidas; finalmente, después de
-\texttt{L5} ($z\approx\SI{18.1}{mm}$), la intensidad converge selectivamente sobre el plano de
-salida ($z\approx\SI{21.7}{mm}$) en la coordenada transversal del detector correspondiente.
+\texttt{L5} ($z\approx\SI{18.0}{mm}$), la intensidad converge selectivamente sobre el plano de
+salida ($z\approx\SI{21.6}{mm}$) en la coordenada transversal del detector correspondiente.
 
+\FloatBarrier
 \section{Tolerancias de fabricación}\label{sec:fabricacion}
 
 El artículo reporta \SI{91.57}{\percent} en simulación y \SI{84}{\percent} en el experimento. Para
 estimar qué imperfecciones explican esa diferencia, se evaluó la red del caso~2 (neuronas de
 \SI{3.8}{\micro m}) \emph{sin reentrenar} bajo cuatro tipos de error (\cref{fig:fabricacion}).
 
-\begin{figure}[htb]
+\begin{figure}[htbp]
 \centering
-\includegraphics[width=\textwidth]{fabricacion.png}
+\includegraphics[width=0.90\textwidth]{fabricacion.png}
 \caption[Tolerancias de fabricación]{Precisión de la red del caso~2 ante (a) cuantización
 de la fase, (b) error en la profundidad grabada, (c) desalineación lateral aleatoria de cada
 capa y (d) error en la distancia entre capas. La línea punteada es la red ideal
@@ -251,7 +254,7 @@ capa y (d) error en la distancia entre capas. La línea punteada es la red ideal
 \label{fig:fabricacion}
 \end{figure}
 
-\begin{table}[htb]
+\begin{table}[htbp]
 \centering
 \caption{Precisión (\%) de la red del caso~2 bajo errores de fabricación.}
 \label{tab:fabricacion}
@@ -288,7 +291,8 @@ desplaza exactamente $k$ neuronas en una dirección aleatoria independiente (5 r
 \end{itemize}
 \end{resultado}
 
-\section{Sistema completo de $1000\times1000$ neuronas}\label{sec:sistema-completo}
+\FloatBarrier
+\section{Sistema completo de \texorpdfstring{$1000\times1000$}{1000x1000} neuronas}\label{sec:sistema-completo}
 
 El sistema completo del artículo consiste en 5 capas difractivas de $1000\times1000$ neuronas
 ($d_f=\SI{4}{\micro m}$, abertura $w=\SI{4}{mm}$, separación $D=\SI{50}{mm}\approx\Dmin$),
@@ -304,11 +308,11 @@ La evolución por época (\cref{tab:full-hist}) muestra una rápida convergencia
 (\SI{79.11}{\percent} tras la época~1 y \SI{88.32}{\percent} en la época~3) seguida de una
 aproximación asintótica a la meseta en la época~6, donde la precisión de prueba alcanza
 \textbf{\SI{90.63}{\percent}} en un tiempo total de \SI{10537}{s} (\SI{2}{h} \SI{56}{min}).
-La \cref{tab:full} resume el desempeño frente a \textcite{chen2021}: la diferencia respecto al
-\SI{91.57}{\percent} del artículo es menor a un punto porcentual (\SI{0.94}{pp}), pese a
+\Cref{tab:full} resume el desempeño frente a \textcite{chen2021}: la diferencia respecto al
+\SI{91.57}{\percent} del artículo es menor a un punto porcentual (\num{0.94}~puntos porcentuales), pese a
 entrenar 6 épocas en lugar de 20 y emplear nuestra propia generación sintética de la clase~X.
 
-\begin{table}[htb]
+\begin{table}[!htbp]
 \centering
 \caption{Convergencia por época del sistema completo de $1000\times1000$ neuronas (\texttt{--bs 24}, RTX~5060~Ti).}
 \label{tab:full-hist}
@@ -326,23 +330,24 @@ entrenar 6 épocas en lugar de 20 y emplear nuestra propia generación sintétic
 \end{tabular}
 \end{table}
 
-\begin{table}[htb]
+\begin{table}[!htbp]
 \centering
+\small
 \caption[Resultados del sistema completo de $1000\times1000$ neuronas]{Comparación del sistema completo ($1000\times1000$ neuronas, 11 clases) frente a \textcite{chen2021}.}
 \label{tab:full}
-\begin{tabular}{@{}lcc@{}}
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}X>{\centering\arraybackslash}p{4.3cm}>{\centering\arraybackslash}p{4.3cm}@{}}
 \toprule
 Métrica & Artículo (20 épocas) & Este trabajo (6 épocas)\\
 \midrule
 Precisión total (11 clases, \num{11000} imgs.) & \SI{91.57}{\percent} & \textbf{\SI{90.63}{\percent}}\\
 Dígitos sin cambio (0--9, \num{10000} imgs.) & --- & \textbf{\SI{90.24}{\percent}}\\
 Clase X (tapados o alterados, \num{1000} imgs.) & --- & \textbf{\SI{94.50}{\percent}}\\
-Tiempo de entrenamiento & $\approx$\SI{20}{h} ($\approx$\SI{1}{h}/época, GTX~1080) & \SI{2.93}{h} (\SI{29.3}{min}/época, RTX~5060~Ti)\\
+Tiempo de entrenamiento & $\approx\SI{20}{h}$ ($\approx\SI{1}{h}$/época, GTX~1080) & \SI{2.93}{h} (\SI{29.3}{min}/época, RTX~5060~Ti)\\
 \bottomrule
-\end{tabular}
+\end{tabularx}
 \end{table}
 
-Las \cref{fig:full-confusion,fig:full-fases,fig:full-ejemplos,fig:full-seises,fig:full-onda,fig:full-corte}
+\Cref{fig:full-confusion,fig:full-fases,fig:full-ejemplos,fig:full-seises,fig:full-onda,fig:full-corte}
 muestran el comportamiento óptico del modelo de $1000\times1000$ evaluado con
 \texttt{05\_evaluate.py}. En la matriz de confusión (\cref{fig:full-confusion}), todas las
 clases concentran su diagonal con alta pureza —destacando el dígito~1 (\num{1100} aciertos) y
@@ -363,7 +368,7 @@ reconocible como objeto fuera de clase. El corte longitudinal $x\text{--}z$
 (\cref{fig:full-corte}) muestra la expansión del frente de onda a lo largo de los
 \SI{300}{mm} totales del tren óptico y su canalización hacia los haces desviados de salida.
 
-\begin{figure}[htb]
+\begin{figure}[htbp]
 \centering
 \includegraphics[width=0.62\textwidth]{full_confusion.png}
 \caption[Matriz de confusión del sistema completo]{Matriz de confusión del sistema completo de
@@ -372,7 +377,7 @@ $1000\times1000$ neuronas sobre \num{11000} imágenes de prueba (precisión glob
 \label{fig:full-confusion}
 \end{figure}
 
-\begin{figure}[htb]
+\begin{figure}[htbp]
 \centering
 \includegraphics[width=\textwidth]{full_fases.png}
 \caption[Fases entrenadas del sistema completo]{Máscaras de fase \texttt{L1}--\texttt{L5}
@@ -382,7 +387,7 @@ artículo.}
 \label{fig:full-fases}
 \end{figure}
 
-\begin{figure}[htb]
+\begin{figure}[htbp]
 \centering
 \includegraphics[width=0.88\textwidth]{full_fig3_ejemplos.png}
 \caption[Ejemplos de clasificación con clase X]{Respuesta del sistema completo para un 3
@@ -390,7 +395,7 @@ intacto, un 3 alterado, un 4 intacto y un 4 tapado (equivalente a la Fig.~3 del 
 \label{fig:full-ejemplos}
 \end{figure}
 
-\begin{figure}[htb]
+\begin{figure}[htbp]
 \centering
 \begin{subfigure}{0.49\textwidth}\centering
   \includegraphics[width=\textwidth]{full_fig4_seises.png}
@@ -407,7 +412,7 @@ del dígito~6 enfocan en el detector~6; (b) una onda plana sin objeto se dirige 
 \label{fig:full-seises-onda}
 \end{figure}
 
-\begin{figure}[htb]
+\begin{figure}[htbp]
 \centering
 \includegraphics[width=\textwidth]{full_corte_xz.png}
 \caption[Corte longitudinal del sistema completo]{Corte longitudinal $x\text{--}z$ en $y=0$
@@ -457,9 +462,9 @@ reduce la precisión del sistema completo a \SI{81.4 \pm 3.5}{\percent}; dos neu
 (\SIrange{8.7}{12.8}{\percent}). Al igual que en el caso~2, una neurona de desalineación basta
 para explicar la diferencia entre la precisión simulada y la experimental del artículo.
 
-\begin{figure}[htb]
+\begin{figure}[htbp]
 \centering
-\includegraphics[width=\textwidth]{full_fabricacion.png}
+\includegraphics[width=0.88\textwidth]{full_fabricacion.png}
 \caption[Tolerancias de fabricación del sistema completo]{Sensibilidad del sistema de
 $1000\times1000$ neuronas (precisión ideal de \SI{91.35}{\percent} en \num{2000} imágenes) ante
 (a) cuantización, (b) error de profundidad, (c) desalineación lateral y (d) variación porcentual
@@ -467,6 +472,7 @@ de $D=\SI{50}{mm}$.}
 \label{fig:full-fabricacion}
 \end{figure}
 
+\FloatBarrier
 \subsection{Eficiencia de detección}\label{sec:eficiencia}
 
 La pérdida \eqref{eq:perdida} usa la energía \emph{relativa} entre detectores, así que no

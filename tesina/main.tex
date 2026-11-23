@@ -4,7 +4,8 @@
 %  En Overleaf: compilador pdfLaTeX; la bibliografía usa biber automáticamente.
 % =====================================================================
 \documentclass[letterpaper,fontsize=12pt,twoside=false,listof=totoc,
-               bibliography=totoc,headings=normal,parskip=false]{scrbook}
+               bibliography=totoc,headings=normal,parskip=false,
+               numbers=noenddot]{scrbook}
 
 \input{meta/preambulo}
 \input{meta/datos}
@@ -27,6 +28,7 @@
 \printbibliography[title={Referencias}]
 
 \appendix
+\crefalias{chapter}{appendix}
 \input{capitulos/A_rayleigh_sommerfeld}
 \input{capitulos/B_implementacion}
 

@@ -230,8 +230,8 @@ con $\mathcal{A}$ lineal. Para una función real, $\dd\mathcal{L}=2\Real\{\langl
 Para la propagación, $\mathcal{P}_D=\IFT\,\mathrm{diag}(H)\,\FT$ y, como la transformada de
 Fourier normalizada es unitaria,
 \begin{equation}
-  \mathcal{P}_D^\dagger=\IFT\,\mathrm{diag}(H^*)\,\FT,\qquad
-  H^*(u,v;D)=e^{-\jj kD\cos\gamma}=H(u,v;-D)\quad(\text{ondas propagantes}).
+  \mathcal{P}_D^\dagger=\IFT\,\mathrm{diag}(H^*)\,\FT,\quad
+  H^*(u,v;D)=e^{-\jj kD\cos\gamma}=H(u,v;-D)\;(\text{ondas propagantes}).
   \label{eq:adjunto}
 \end{equation}
 \textbf{El error se retropropaga propagando el campo de error una distancia $-D$}: es una
@@ -261,8 +261,8 @@ en este trabajo, realiza exactamente este cálculo.
 
 \begin{figure}[htb]
 \centering
-\begin{tikzpicture}[x=0.95cm,y=1cm,>={Stealth[length=2mm]},
-   nodo/.style={draw,rounded corners=2pt,minimum width=1.25cm,minimum height=0.75cm,font=\small,fill=white},
+\begin{tikzpicture}[x=0.95cm,y=0.82cm,>={Stealth[length=2mm]},
+   nodo/.style={draw,rounded corners=2pt,minimum width=1.25cm,minimum height=0.72cm,font=\small,fill=white},
    mascara/.style={nodo,fill=udlap!25,draw=udlaposcuro}]
   % fila hacia adelante
   \node[nodo] (in) at (0,0) {$Y^{\text{ent}}$};
@@ -277,11 +277,11 @@ en este trabajo, realiza exactamente este cálculo.
   \draw[->,thick] (dots) -- (tL);
   \draw[->,thick] (tL) -- node[above,font=\scriptsize]{$\mathcal{P}_D$} (I);
   % fila hacia atrás
-  \node[nodo,draw=azulfig] (g1) at (2.7,-2.4) {$G^{W,1}$};
-  \node[nodo,draw=azulfig] (g2) at (5.4,-2.4) {$G^{W,2}$};
-  \node (dots2) at (7.4,-2.4) {$\cdots$};
-  \node[nodo,draw=azulfig] (gL) at (9.4,-2.4) {$G^{W,L}$};
-  \node[nodo,draw=azulfig] (gs) at (12.6,-2.4) {$G^{\text{sal}}=c\,Y^{\text{sal}}$};
+  \node[nodo,draw=azulfig] (g1) at (2.7,-2.15) {$G^{W,1}$};
+  \node[nodo,draw=azulfig] (g2) at (5.4,-2.15) {$G^{W,2}$};
+  \node (dots2) at (7.4,-2.15) {$\cdots$};
+  \node[nodo,draw=azulfig] (gL) at (9.4,-2.15) {$G^{W,L}$};
+  \node[nodo,draw=azulfig] (gs) at (12.6,-2.15) {$G^{\text{sal}}=c\,Y^{\text{sal}}$};
   \draw[->,thick,azulfig] (I) -- (gs);
   \draw[->,thick,azulfig] (gs) -- node[below=2pt,font=\scriptsize]{$\mathcal{P}_D^\dagger$ ($H^*$)} (gL);
   \draw[->,thick,azulfig] (gL) -- (dots2);
@@ -292,8 +292,8 @@ en este trabajo, realiza exactamente este cálculo.
      \draw[->,dashed,udlaposcuro] (\a) -- (\b);
      \node[font=\scriptsize,udlaposcuro,fill=white,inner sep=1pt] at ($(\a)!0.5!(\b)$)
          {$2\,\Imag\{G^{W}W^*\}$};}
-  \node[font=\small,anchor=west] at (-1.0,0.75) {hacia adelante};
-  \node[font=\small,anchor=west,azulfig] at (-1.0,-3.2) {hacia atrás (error)};
+  \node[font=\small,anchor=west] at (-1.0,0.65) {hacia adelante};
+  \node[font=\small,anchor=west,azulfig] at (-1.0,-2.85) {hacia atrás (error)};
 \end{tikzpicture}
 \caption[Cálculo del gradiente por retropropagación]{Cálculo del gradiente. La fila
 superior es la propagación del campo; la inferior, la del campo de error, que viaja en
@@ -302,6 +302,7 @@ el gradiente es el término de interferencia de ambas ondas (\cref{eq:gradiente}
 \label{fig:adjunto}
 \end{figure}
 
+\clearpage
 \subsection{Comprobación numérica}
 
 Para verificar la deducción, el script \texttt{scripts/07\_check\_gradient.py} del repositorio
@@ -311,7 +312,7 @@ PyTorch por diferenciación automática. En la implementación discreta el campo
 ceros antes de la FFT y se recorta después (\cref{cap:numerico}); como el recorte es el
 adjunto del relleno, el operador adjunto conserva la forma \eqref{eq:adjunto}.
 
-\begin{table}[htb]
+\begin{table}[!htbp]
 \centering
 \caption{Error relativo $\lVert g_{\text{analítico}}-g_{\text{PyTorch}}\rVert/\lVert g_{\text{PyTorch}}\rVert$
 entre el gradiente de \cref{eq:gradiente} y el de la diferenciación automática (doble precisión).}
@@ -320,7 +321,7 @@ entre el gradiente de \cref{eq:gradiente} y el de la diferenciación automática
 \toprule
 Capa 1 & Capa 2 & Capa 3 & Capa 4 & Capa 5 & Total\\
 \midrule
-\num{4.7e-13} & \num{4.9e-13} & \num{4.8e-13} & \num{4.8e-13} & \num{4.9e-13} & \num{4.9e-13}\\
+\num{4.90e-16} & \num{5.31e-16} & \num{5.10e-16} & \num{4.79e-16} & \num{3.43e-16} & \num{4.49e-16}\\
 \bottomrule
 \end{tabular}
 \end{table}

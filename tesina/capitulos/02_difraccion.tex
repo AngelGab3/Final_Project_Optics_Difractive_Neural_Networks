@@ -32,8 +32,8 @@ En aire ($n\approx1$) y con $\lambda=\SI{632.8}{nm}$, el número de onda vale
 $k=2\pi/\lambda=\SI{9.93e6}{m^{-1}}$.
 
 \paragraph{Convención de signos.} Con la dependencia temporal $e^{-\jj\omega t}$ de
-\eqref{eq:fasor}, una onda plana que avanza hacia $+z$ se escribe $e^{+\jj kz}$. Es la misma
-convención que usa \textcite{chen2021} en su Ec.~2.
+\eqref{eq:fasor}, una onda plana que se propaga hacia $+z$ tiene la forma $e^{+\jj kz}$, la
+misma convención empleada por \textcite{chen2021} en su Ec.~2.
 
 \paragraph{Validez de la aproximación escalar.} Tratar cada componente por separado ignora
 el acoplamiento entre componentes que introducen los bordes de las aperturas. Ese
@@ -75,29 +75,30 @@ capa siguiente.
 \centering
 \begin{tikzpicture}[scale=1.0,>={Stealth[length=2.2mm]}]
   % plano de la apertura
-  \fill[gray!15] (0,-2.6) rectangle (0.18,2.6);
-  \draw[thick] (0.18,-2.6) -- (0.18,2.6);
-  \node[above] at (0.1,2.6) {\small plano $z=0$};
+  \fill[gray!15] (0,-2.5) rectangle (0.18,2.5);
+  \draw[thick] (0.18,-2.5) -- (0.18,2.5);
+  \node[above] at (0.05,2.7) {\small plano $z=0$};
   % frente incidente
-  \foreach \x in {-2.4,-1.8,-1.2} \draw[azulfig!70,thick] (\x,-2.2) -- (\x,2.2);
-  \draw[->,azulfig,thick] (-2.6,0) -- (-0.6,0) node[midway,above] {\small onda incidente};
+  \foreach \x in {-2.4,-1.8,-1.2} \draw[azulfig!70,thick] (\x,-2.1) -- (\x,2.1);
+  \draw[->,azulfig,thick] (-2.6,0) -- (-0.6,0);
+  \node[azulfig,above,font=\small] at (-1.8,2.28) {onda incidente};
   % fuentes secundarias y ondas esféricas
-  \foreach \y in {-1.6,-0.8,0,0.8,1.6}{
+  \foreach \y in {-1.4,-0.7,0,0.7,1.4}{
      \fill[udlap] (0.18,\y) circle (1.6pt);
-     \foreach \r in {0.5,1.0,1.5}
+     \foreach \r in {0.45,0.9,1.35}
         \draw[udlap!70] ($(0.18,\y)+(-80:\r)$) arc (-80:80:\r);
   }
   % envolvente
-  \draw[udlaposcuro,very thick,dashed] (1.70,-2.2) -- (1.70,2.2);
-  \node[udlaposcuro,right,align=left] at (1.85,1.9) {\small envolvente:\\ \small nuevo frente};
+  \draw[udlaposcuro,very thick,dashed] (1.55,-2.1) -- (1.55,2.1);
+  \node[udlaposcuro,right,align=left] at (1.70,1.85) {\small envolvente:\\ \small nuevo frente};
   % punto de observación
   \coordinate (P) at (5.6,0.9);
   \fill (P) circle (1.8pt) node[right] {\small $P(x,y,z)$};
-  \draw[->,gray] (0.18,-0.8) -- (P) node[midway,below,sloped] {\small $r$};
-  \draw[gray,dashed] (0.18,-0.8) -- (5.6,-0.8);
-  \draw[gray] ($(0.18,-0.8)+(1.4,0)$) arc (0:{atan(1.7/5.42)}:1.4);
-  \node[gray] at (1.95,-0.55) {\small $\theta$};
-  \draw[->] (0.18,-2.9) -- (6.2,-2.9) node[right] {$z$};
+  \draw[->,gray] (0.18,-0.7) -- (P) node[midway,below,sloped] {\small $r$};
+  \draw[gray,dashed] (0.18,-0.7) -- (5.6,-0.7);
+  \draw[gray] ($(0.18,-0.7)+(1.4,0)$) arc (0:{atan(1.6/5.42)}:1.4);
+  \node[gray] at (1.95,-0.45) {\small $\theta$};
+  \draw[->] (0.18,-2.8) -- (6.2,-2.8) node[right] {$z$};
 \end{tikzpicture}
 \caption[Principio de Huygens--Fresnel]{Principio de Huygens--Fresnel. Cada punto del
 plano $z=0$ actúa como fuente de una onda esférica secundaria; el campo en $P$ es la
@@ -148,18 +149,18 @@ que usa \textcite{chen2021} entre sus Ecs.~2 y~3.
   \draw[->] (0,0,0) -- (1.5,0,0) node[anchor=north east] {$x$};
   \draw[->] (0,0,0) -- (0,1.5,0) node[anchor=north west] {$y$};
   \draw[->] (0,0,0) -- (0,0,1.45) node[anchor=south] {$z$};
-  \coordinate (K) at (0.75,0.65,1.1);
+  \coordinate (K) at (0.85,0.70,0.95);
   \draw[->,very thick,udlap] (0,0,0) -- (K) node[anchor=south west] {$\bm k$};
-  \draw[dashed,gray] (K) -- (0.75,0.65,0) -- (0,0,0);
-  \draw[dashed,gray] (0.75,0.65,0) -- (0.75,0,0);
-  \draw[dashed,gray] (0.75,0.65,0) -- (0,0.65,0);
+  \draw[dashed,gray] (K) -- (0.85,0.70,0) -- (0,0,0);
+  \draw[dashed,gray] (0.85,0.70,0) -- (0.85,0,0);
+  \draw[dashed,gray] (0.85,0.70,0) -- (0,0.70,0);
   % ángulos
-  \tdplotdefinepoints(0,0,0)(1,0,0)(0.75,0.65,1.1)
-  \tdplotdrawpolytopearc[thick,azulfig]{0.5}{anchor=north}{$\alpha$}
-  \tdplotdefinepoints(0,0,0)(0,1,0)(0.75,0.65,1.1)
-  \tdplotdrawpolytopearc[thick,azulfig]{0.45}{anchor=north west}{$\beta$}
-  \tdplotdefinepoints(0,0,0)(0,0,1)(0.75,0.65,1.1)
-  \tdplotdrawpolytopearc[thick,azulfig]{0.55}{anchor=south west}{$\gamma$}
+  \tdplotdefinepoints(0,0,0)(1,0,0)(0.85,0.70,0.95)
+  \tdplotdrawpolytopearc[thick,azulfig]{0.50}{anchor=south east}{$\alpha$}
+  \tdplotdefinepoints(0,0,0)(0,1,0)(0.85,0.70,0.95)
+  \tdplotdrawpolytopearc[thick,azulfig]{0.52}{anchor=south west}{$\beta$}
+  \tdplotdefinepoints(0,0,0)(0,0,1)(0.85,0.70,0.95)
+  \tdplotdrawpolytopearc[thick,azulfig]{0.82}{anchor=south}{$\gamma$}
 \end{tikzpicture}
 \caption[Cosenos directores del vector de onda]{Ángulos del vector de onda $\bm k$ con los
 ejes coordenados. La componente de una onda plana con frecuencias espaciales $(u,v)$ viaja
@@ -214,8 +215,8 @@ al impulso \eqref{eq:h-rs}, de modo que \eqref{eq:asm} y \eqref{eq:rs} son
 \emph{exactamente} equivalentes \parencite[sec.~3.10]{goodman2005}.
 
 \paragraph{Observación sobre la notación del artículo.} Las Ecs.~4 y~5 de
-\textcite{chen2021} escriben el campo de salida como el producto del campo $W^{l+1}$ por el
-factor de fase $\exp[\jj kd_l\sqrt{1-\lambda^2(u^2+v^2)}]$. Tomada literalmente, esa
+\textcite{chen2021} escriben el campo de salida multiplicando $W^{l+1}$ por el factor
+$\exp\bigl[\jj kd_l\sqrt{1-\lambda^2(u^2+v^2)}\bigr]$. Tomada literalmente, esa
 expresión mezcla una función de $(x,y)$ con una de $(u,v)$; el producto debe hacerse en el
 dominio de Fourier, como en \eqref{eq:asm}. En el \cref{cap:modelo} se usa la forma correcta.
 
@@ -290,24 +291,24 @@ del máximo.
 \begin{figure}[htb]
 \centering
 \begin{tikzpicture}
-\begin{axis}[width=0.88\textwidth,height=6.2cm,
+\begin{axis}[width=0.86\textwidth,height=3.6cm,
   xlabel={$d_f\,u=d_f\sin\theta/\lambda$}, ylabel={$\sinc^2(d_fu)$},
-  xmin=-2.6,xmax=2.6,ymin=0,ymax=1.08,samples=400,domain=-2.6:2.6,
+  xmin=-2.6,xmax=2.6,ymin=0,ymax=1.15,samples=400,domain=-2.6:2.6,
   xtick={-2,-1,-0.5,0,0.5,1,2},
   xticklabels={$-2$,$-1$,$-\tfrac12$,$0$,$\tfrac12$,$1$,$2$},
   axis lines=left,grid=major,grid style={gray!20},
-  legend style={at={(0.98,0.97)},anchor=north east,font=\small,draw=none,fill=white}]
+  legend style={at={(0.5,1.04)},anchor=south,legend columns=2,column sep=8pt,font=\footnotesize,draw=none,fill=none}]
   \addplot[name path=f,very thick,udlap] {x==0 ? 1 : (sin(deg(pi*x))/(pi*x))^2};
   \addlegendentry{intensidad radiada por una neurona}
   \path[name path=axis] (axis cs:-0.5,0) -- (axis cs:0.5,0);
   \addplot[udlap!25] fill between[of=f and axis,soft clip={domain=-0.5:0.5}];
   \addlegendentry{banda de Nyquist: \SI{77.4}{\percent} de la energía (1D)}
-  \draw[dashed,thick,azulfig] (axis cs:0.5,0) -- (axis cs:0.5,1.0)
-     node[above,font=\small,align=center] {$\sin\varphi_{\max}=\lambda/2d_f$};
-  \draw[dashed,thick,gray] (axis cs:1,0) -- (axis cs:1,0.55)
-     node[above,font=\small,align=center] {primer cero\\$\sin\theta=\lambda/d_f$};
+  \draw[dashed,thick,azulfig] (axis cs:0.5,0) -- (axis cs:0.5,1.02);
+  \node[font=\footnotesize,azulfig,anchor=west] at (axis cs:0.54,0.96) {$\sin\varphi_{\max}=\lambda/(2d_f)$};
+  \draw[dashed,thick,gray] (axis cs:1,0) -- (axis cs:1,0.52);
+  \node[font=\footnotesize,gray,align=left,anchor=west] at (axis cs:1.05,0.44) {primer cero\\$\sin\theta=\lambda/d_f$};
   \draw[dotted,thick] (axis cs:-2.6,0.405) -- (axis cs:0.5,0.405);
-  \node[font=\small,anchor=south west] at (axis cs:-2.55,0.41) {$4/\pi^2\approx0.405$};
+  \node[font=\footnotesize,anchor=south west] at (axis cs:-2.55,0.42) {$4/\pi^2\approx0.405$};
 \end{axis}
 \end{tikzpicture}
 \caption[Patrón de difracción de una neurona]{Intensidad radiada por una neurona cuadrada

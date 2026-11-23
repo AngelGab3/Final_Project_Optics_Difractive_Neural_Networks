@@ -9,7 +9,7 @@
 \begin{algorithmic}[1]
 \Require imágenes $\{(X_b,y_b)\}$, parámetros $\theta^1,\dots,\theta^L$, tasa $\eta=10^{-3}$
 \State Calcular $H(u,v;D)$ en doble precisión, con el límite de banda \eqref{eq:flim}
-\For{época $=1,\dots,20$}
+\For{época $=1,\dots,E$}\Comment{$E=20$ en Fig.~6 y barridos; $E=6$ en el sistema completo}
   \For{cada lote $(X,y)$}
     \State $Y\gets$ codificar $X$ como amplitud (binaria) en el plano de entrada
     \State $Y\gets\mathcal{P}_D\{Y\}$
@@ -28,7 +28,9 @@
 
 \section{Decisiones no especificadas en el artículo}
 
-\begin{table}[htb]
+\Cref{tab:decisiones} resume las elecciones de implementación en aspectos que \textcite{chen2021} no especifican.
+
+\begin{table}[!htbp]
 \centering
 \caption{Decisiones de la reproducción en aspectos que \textcite{chen2021} no especifican.}
 \label{tab:decisiones}
@@ -49,11 +51,12 @@ Caso 3 de la Fig.~6 & Se simulan los dos valores de $D$ que aparecen en el artí
 \end{tabularx}
 \end{table}
 
+\FloatBarrier
 \section{Reproducibilidad}
 
 El código, los resultados y este documento están en el repositorio del proyecto
 \parencite{repo2026}. Los pasos para reproducir cada resultado son:
-\begin{lstlisting}[language=bash,numbers=none]
+\begin{lstlisting}[language=bash,numbers=none,basicstyle=\ttfamily\scriptsize]
 python -m pytest -q tests                      # pruebas unitarias
 python scripts/01_validate_optics.py            # capítulo 5
 python scripts/02_fig6_cases.py                 # sección 6.1
@@ -97,10 +100,10 @@ Lote & ms/iteración & ms/imagen & Época (\num{80000} img.) & 20 épocas & VRAM
 \end{table}
 
 El tamaño de lote \texttt{--bs 24} ofrece el mayor rendimiento efectivo
-(\SI{20.32}{ms/imagen}, \SI{487.6}{ms/iteración} y \SI{27.1}{min} por época completa de
+(\SI{20.32}{ms} por imagen, \SI{487.6}{ms} por iteración y \SI{27.1}{min} por época completa de
 \num{80000} imágenes) consumiendo \SI{7.03}{GiB} de VRAM pico, menos de la mitad de la memoria
 disponible en la GPU. Con \texttt{--bs 32} el tiempo por imagen se satura ligeramente
-(\SI{20.63}{ms/imagen}, \SI{9.30}{GiB}), mientras que a partir de \texttt{--bs 48} las FFT
+(\SI{20.63}{ms} por imagen, \SI{9.30}{GiB}), mientras que a partir de \texttt{--bs 48} las FFT
 complejas de $2000\times 2000$ sobrepasan los \SI{15.56}{GiB} útiles de la tarjeta.
 
 En la corrida final del sistema completo (\texttt{--epochs 6 --bs 24}), cada época completa

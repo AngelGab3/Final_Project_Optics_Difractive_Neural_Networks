@@ -33,7 +33,7 @@
 \usepackage{esint}
 \usepackage{siunitx}
 \sisetup{output-decimal-marker={.},group-separator={\,},per-mode=symbol,
-         range-phrase={--},list-final-separator={ y }}
+         range-phrase={--},list-final-separator={ y },separate-uncertainty=true}
 \numberwithin{equation}{chapter}
 \newcommand{\dd}{\,\mathrm{d}}
 \newcommand{\jj}{\mathrm{j}}
@@ -59,6 +59,11 @@
 \usepackage{booktabs,multirow,array,tabularx}
 \usepackage[font=small,labelfont={bf,color=udlaposcuro},format=hang]{caption}
 \usepackage{subcaption}
+\usepackage{placeins}
+\renewcommand{\topfraction}{0.85}
+\renewcommand{\bottomfraction}{0.7}
+\renewcommand{\textfraction}{0.12}
+\renewcommand{\floatpagefraction}{0.75}
 \usepackage{tikz}
 \usetikzlibrary{calc,arrows.meta,decorations.pathreplacing,decorations.pathmorphing,
                 patterns,positioning,shapes.geometric,3d,fit,backgrounds}
