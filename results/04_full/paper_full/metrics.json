@@ -1,0 +1,6 @@
+{
+  "test_acc": 0.9062727272727272,
+  "n_test": 11000,
+  "acc_digitos_sin_cambio": 0.9024,
+  "acc_clase_X": 0.945
+}

@@ -1,0 +1,78 @@
+% =====================================================================
+\chapter{Discusión y conclusiones}\label{cap:conclusiones}
+% =====================================================================
+
+\section{Conclusiones}
+
+\begin{enumerate}
+  \item El modelo de \textcite{chen2021} se deduce por completo de la teoría escalar de la
+  difracción: la función de transferencia del espacio libre sale de la ecuación de Helmholtz
+  (\cref{sec:espectro-angular}), y el semiángulo $\varphi_{\max}=\arcsin[\lambda/(2d_f)]$ es el
+  ángulo asociado a la frecuencia de Nyquist de la malla de neuronas, no al primer cero de
+  difracción de una neurona (\cref{sec:neurona}).
+  \item El sistema opera en campo cercano ($N_F\approx126$) y fuera de la validez de la
+  aproximación de Fresnel para las componentes más inclinadas, por lo que es necesario usar
+  la función de transferencia exacta (\cref{sec:fresnel}).
+  \item El gradiente del entrenamiento es el término de interferencia entre la onda que viaja
+  hacia adelante y una onda de error que viaja hacia atrás con la función de transferencia
+  conjugada; la deducción coincide con la diferenciación automática a precisión de máquina
+  (\cref{sec:gradiente}).
+  \item El criterio de conectividad del artículo es idéntico a la condición de muestreo del
+  espectro angular de banda limitada (\cref{prop:identidad}) y, en el régimen paraxial,
+  equivale a una condición sobre el número de Fresnel de una neurona (\cref{prop:fresnel}).
+  \item La simulación reproduce las precisiones del artículo (\cref{tab:fig6}), confirma la
+  hipótesis de conectividad acumulada mediante el barrido de capas $L\in\{1,3,5,8\}$
+  (\cref{sec:barrido}), detecta dos inconsistencias en su Fig.~6 (\cref{sec:inconsistencias}) y
+  reproduce el sistema completo de $1000\times1000$ neuronas y 11 clases en GPU con
+  \SI{90.63}{\percent} de precisión en prueba (\cref{sec:sistema-completo}).
+  \item La alineación lateral de las capas —una sola neurona de desplazamiento baja la precisión a
+  $\approx\SI{84}{\percent}$ en el caso~2 y $\approx\SI{81}{\percent}$ en el sistema completo— y
+  la separación axial $D$, cuya tolerancia relativa escala como $1/\sqrt N$ (\SI{0.10}{\percent}
+  de $D$ en el sistema completo), son las tolerancias de fabricación más exigentes y explican la
+  brecha entre simulación y experimento (\cref{sec:fabricacion,sec:sistema-completo}).
+\end{enumerate}
+
+\section{Limitaciones}
+
+\begin{itemize}
+  \item \textbf{Aproximación escalar.} Es razonable para $d_f\approx6\lambda$, pero no para el
+  caso~1 ($d_f=0.53\lambda$), donde los efectos vectoriales y de acoplamiento entre neuronas
+  vecinas pueden ser importantes \parencite[sec.~3.2]{goodman2005}.
+  \item \textbf{Capas delgadas.} Cada capa se modela como una máscara infinitamente delgada; un
+  relieve de \SI{0.7}{\micro m} junto a neuronas de \SI{4}{\micro m} no es estrictamente delgado.
+  \item \textbf{Elementos del artículo no especificados.} La forma de los detectores, la
+  normalización de la pérdida, la codificación de la entrada y el conjunto de dígitos
+  alterados se tuvieron que elegir (\cref{tab:decisiones}), y pueden explicar parte de las
+  diferencias.
+  \item \textbf{Sin experimento.} Todos los resultados son numéricos.
+\end{itemize}
+
+\section{Trabajo futuro}
+
+\begin{itemize}
+  \item \textbf{Entrenamiento robusto ante imperfecciones:} incorporar aleatoriamente durante el
+  entrenamiento desplazamientos laterales, variaciones en la distancia $D$ y cuantización de
+  fase (\emph{error-aware training}) para cerrar la brecha entre simulación y experimento.
+  \item \textbf{Modelado electromagnético vectorial:} emplear métodos FDTD o RCWA en arreglos
+  con $d_f\lesssim\lambda$, donde el acoplamiento cercano y el relieve físico finito dejan de
+  ser despreciables.
+  \item \textbf{Fabricación experimental e iluminación policromática:} evaluar el desempeño
+  de las máscaras cuantizadas en sílice fundida ante desalineaciones multigrado y múltiples
+  longitudes de onda.
+\end{itemize}
+
+\section{Valoración final}
+
+Este proyecto muestra que un problema moderno de cómputo óptico se explica por completo con las
+herramientas fundamentales de la óptica ondulatoria: la ecuación de Helmholtz, el espectro
+angular de ondas planas, el teorema de muestreo de Shannon--Nyquist y la escala fijada por el
+número de Fresnel. Lejos de ser una caja negra numérica, cada regla de diseño y cada límite de
+resolución de una D\textsuperscript{2}NN tienen una raíz física transparente: desde la
+identidad exacta entre el criterio de conectividad y el límite de banda del propagador, hasta
+el papel de la interferencia holográfica en el cálculo de su gradiente. En cuanto a la promesa
+de la computación óptica, las D\textsuperscript{2}NN resultan especialmente atractivas para
+tareas de procesamiento visual y filtrado pasivo de baja latencia —donde la luz clasifica o
+transforma un frente de onda sin consumo energético adicional durante la inferencia—, aunque
+su escalamiento práctico frente a arquitecturas electrónicas seguirá condicionado por la
+linealidad de la propagación libre, la tolerancia de alineación sub-micrométrica y el cuello de
+botella optoelectrónico en las etapas de entrada y detección.

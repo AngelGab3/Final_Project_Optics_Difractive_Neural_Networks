@@ -1,0 +1,12 @@
+data
+__pycache__/
+*.pyc
+*.pt.tmp
+.pytest_cache/
+# los modelos del sistema completo pesan ~20 MB; descomenta si no quieres subirlos
+# results/04_full/**/model.pt
+*.bundle
+.DS_Store
+*.nav
+*.snm
+*.vrb

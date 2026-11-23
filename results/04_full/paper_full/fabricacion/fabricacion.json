@@ -1,0 +1,118 @@
+{
+  "ideal": 0.9135,
+  "quant": [
+    {
+      "levels": 2,
+      "acc": 0.0845
+    },
+    {
+      "levels": 4,
+      "acc": 0.875
+    },
+    {
+      "levels": 8,
+      "acc": 0.9105
+    },
+    {
+      "levels": 16,
+      "acc": 0.9105
+    },
+    {
+      "levels": 32,
+      "acc": 0.9125
+    }
+  ],
+  "depth": [
+    {
+      "scale": 0.8,
+      "acc": 0.8545
+    },
+    {
+      "scale": 0.9,
+      "acc": 0.8965
+    },
+    {
+      "scale": 0.95,
+      "acc": 0.907
+    },
+    {
+      "scale": 1.0,
+      "acc": 0.9135
+    },
+    {
+      "scale": 1.05,
+      "acc": 0.9155
+    },
+    {
+      "scale": 1.1,
+      "acc": 0.917
+    },
+    {
+      "scale": 1.2,
+      "acc": 0.9085
+    }
+  ],
+  "shift": [
+    {
+      "shift_px": 0,
+      "shift_um": 0.0,
+      "acc": 0.9135,
+      "std": 0.0
+    },
+    {
+      "shift_px": 1,
+      "shift_um": 4.0,
+      "acc": 0.8136666666666666,
+      "std": 0.03526644612407413
+    },
+    {
+      "shift_px": 2,
+      "shift_um": 8.0,
+      "acc": 0.3838333333333333,
+      "std": 0.19465196862320427
+    },
+    {
+      "shift_px": 3,
+      "shift_um": 12.0,
+      "acc": 0.12833333333333333,
+      "std": 0.04443972197132751
+    },
+    {
+      "shift_px": 5,
+      "shift_um": 20.0,
+      "acc": 0.08700000000000001,
+      "std": 0.0012247448713915846
+    }
+  ],
+  "distance": [
+    {
+      "rel": -0.1,
+      "acc": 0.086
+    },
+    {
+      "rel": -0.05,
+      "acc": 0.0885
+    },
+    {
+      "rel": -0.02,
+      "acc": 0.1205
+    },
+    {
+      "rel": 0.0,
+      "acc": 0.9135
+    },
+    {
+      "rel": 0.02,
+      "acc": 0.1505
+    },
+    {
+      "rel": 0.05,
+      "acc": 0.09
+    },
+    {
+      "rel": 0.1,
+      "acc": 0.1075
+    }
+  ],
+  "shift_note": "Desplazamiento de k neuronas enteras por capa en direcci\u00f3n aleatoria; 3 repeticiones; 2000 im\u00e1genes (CPU)."
+}

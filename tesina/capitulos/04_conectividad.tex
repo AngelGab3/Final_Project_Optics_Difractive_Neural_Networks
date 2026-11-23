@@ -1,0 +1,188 @@
+% =====================================================================
+\chapter{Conectividad entre capas}\label{cap:conectividad}
+% =====================================================================
+
+En una red neuronal electrónica ``totalmente conectada'', cada neurona de una capa está
+conectada con todas las de la siguiente. En una D\textsuperscript{2}NN las conexiones son las
+ondas secundarias de Huygens (\cref{sec:rs}), y su alcance está limitado por el semiángulo de
+difracción \eqref{eq:phimax}. Este capítulo deduce el criterio de conectividad de
+\textcite{chen2021}, lo evalúa para sus casos de prueba y muestra cuál es la variable física
+que lo controla.
+
+\section{Deducción del criterio}\label{sec:criterio}
+
+Consideremos una neurona en el borde de la capa $l$ (\cref{fig:cono}). La luz que puede
+dirigir de manera controlada se reparte dentro de un cono de semiángulo $\varphi_{\max}$. Tras
+recorrer la distancia $D$, ese cono ilumina en la capa $l+1$ una mancha de radio
+\parencite[Ec.~7]{chen2021}
+\begin{equation}
+  R=D\tan\varphi_{\max}.
+  \label{eq:radio}
+\end{equation}
+La capa es un cuadrado de lado $w=\sqrt N\,d_f$ \parencite[Ec.~8]{chen2021}. Para que la
+neurona del borde alcance también a la del borde opuesto se necesita $R\ge w$.
+
+\begin{figure}[htb]
+\centering
+\begin{tikzpicture}[x=1cm,y=1cm,>={Stealth[length=2mm]}]
+  \def\D{7.0}\def\w{4.0}
+  % capas
+  \fill[udlap!25] (-0.12,0) rectangle (0.12,\w);
+  \fill[udlap!25] (\D-0.12,0) rectangle (\D+0.12,\w);
+  \draw[udlaposcuro,thick] (-0.12,0) rectangle (0.12,\w);
+  \draw[udlaposcuro,thick] (\D-0.12,0) rectangle (\D+0.12,\w);
+  \foreach \i in {1,...,9} {\draw[udlaposcuro!60] (-0.12,\i*0.4) -- (0.12,\i*0.4);
+                            \draw[udlaposcuro!60] (\D-0.12,\i*0.4) -- (\D+0.12,\i*0.4);}
+  \node[above] at (0,\w+0.55) {capa $l$};
+  \node[above] at (\D,\w+0.55) {capa $l+1$};
+  % neurona del borde
+  \fill[udlaposcuro] (-0.12,0) rectangle (0.12,0.4);
+  % cono
+  \fill[azulfig!12] (0.12,0.2) -- (\D-0.12,4.35) -- (\D-0.12,-3.95) -- cycle;
+  \draw[azulfig,thick] (0.12,0.2) -- (\D-0.12,4.35);
+  \draw[azulfig,thick] (0.12,0.2) -- (\D-0.12,-3.95);
+  \draw[dashed,gray] (0.12,0.2) -- (\D+1.2,0.2);
+  % ángulo
+  \draw[azulfig] (1.8,0.2) arc (0:30.6:1.68);
+  \node[azulfig] at (2.25,0.72) {$\varphi_{\max}$};
+  % R
+  \draw[<->,azulfig] (\D+0.55,0.2) -- (\D+0.55,4.35) node[midway,right] {$R=D\tan\varphi_{\max}$};
+  % w
+  \draw[<->] (-0.6,0) -- (-0.6,\w) node[midway,left] {$w=\sqrt N\,d_f$};
+  % D
+  \draw[<->] (0,-0.6) -- (\D,-0.6) node[midway,fill=white] {$D$};
+  % d_f
+  \draw[<->] (-0.35,0) -- (-0.35,0.4);
+  \node[left,font=\small] at (-0.35,-0.25) {$d_f$};
+\end{tikzpicture}
+\caption[Geometría del criterio de conectividad]{Geometría del criterio de conectividad.
+La luz que una neurona del borde dirige de forma controlada llena un cono de semiángulo
+$\varphi_{\max}$; la conectividad total exige que su radio $R$ en la capa siguiente sea al menos
+el lado $w$ de la capa.}
+\label{fig:cono}
+\end{figure}
+
+Para escribir la condición en términos de $d_f$ y $\lambda$, expresamos la tangente con
+\eqref{eq:phimax}:
+\begin{equation}
+  \tan\varphi_{\max}=\frac{\sin\varphi_{\max}}{\sqrt{1-\sin^2\varphi_{\max}}}
+  =\frac{\lambda/(2d_f)}{\sqrt{1-\lambda^2/(4d_f^2)}}
+  =\frac{1}{\sqrt{4d_f^2/\lambda^2-1}} .
+  \label{eq:tan}
+\end{equation}
+Sustituyendo \eqref{eq:radio} y \eqref{eq:tan} en $R\ge w$ se obtiene el criterio
+\parencite[Ec.~9]{chen2021}:
+\begin{equation}
+  \boxed{\;D\;\ge\;\Dmin\equiv\sqrt N\,d_f\,\sqrt{\frac{4d_f^2}{\lambda^2}-1}\;}
+  \qquad (d_f>\lambda/2).
+  \label{eq:dmin}
+\end{equation}
+Si $d_f\le\lambda/2$, $\sin\varphi_{\max}\ge1$: la neurona difracta hacia todo el semiespacio y
+cualquier $D>0$ satisface el criterio.
+
+\paragraph{Límite paraxial.} Si $d_f\gg\lambda$, el término $-1$ es despreciable y
+\begin{equation}
+  \Dmin\approx\frac{2\sqrt N\,d_f^{2}}{\lambda}=\frac{2\,w\,d_f}{\lambda}.
+  \label{eq:dmin-paraxial}
+\end{equation}
+\Cref{eq:dmin-paraxial} muestra el precio de pasar al visible: la distancia necesaria crece
+con el \emph{cuadrado} del tamaño de neurona y es inversamente proporcional a $\lambda$.
+
+\begin{calculo}[Distancia mínima en el sistema del artículo]
+Con $\sqrt N=1000$, $d_f=\SI{4}{\micro m}$ y $\lambda=\SI{632.8}{nm}$:
+\[
+  \frac{4d_f^2}{\lambda^2}=\frac{4(\num{4e-6})^2}{(\num{632.8e-9})^2}=159.8,
+  \qquad
+  \Dmin=(1000)(\SI{4e-6}{m})\sqrt{158.8}=\SI{50.4}{mm}.
+\]
+Comprobación con \eqref{eq:radio}: con $D=\SI{50}{mm}$, $R=(\SI{50}{mm})(0.0793)=\SI{3.97}{mm}\approx w$.
+La separación de \SI{5}{cm} que usan \textcite{chen2021} está, por lo tanto, justo en el límite.
+\end{calculo}
+
+\section{Los cuatro casos de la Fig.~6 del artículo}\label{sec:casos}
+
+\textcite{chen2021} validan \eqref{eq:dmin} con una red reducida de $80\times80$ neuronas en
+cuatro configuraciones. \Cref{tab:casos} repite el cálculo para cada una.
+
+\begin{table}[htb]
+\centering
+\caption[Criterio de conectividad en los casos de la Fig.~6]{Criterio de conectividad
+\eqref{eq:dmin} evaluado en los cuatro casos de la Fig.~6 de \textcite{chen2021}
+($\sqrt N=80$). Todas las longitudes están en unidades de $\lambda$.}
+\label{tab:casos}
+\begin{tabular}{@{}cccccccc@{}}
+\toprule
+Caso & $d_f$ & $\varphi_{\max}$ & $\sqrt N d_f$ & $\sqrt{4d_f^2/\lambda^2-1}$ & $\Dmin$ & $D$ (artículo) & $D/\Dmin$\\
+\midrule
+1 & 0.53 & \ang{70.6} & 42.4 & 0.352 & 14.9 & 15 & 1.01\\
+2 & 6 & \ang{4.78} & 480 & 11.96 & 5740 & $5.7\times10^3$ & 0.99\\
+3 & 6 & \ang{4.78} & 480 & 11.96 & 5740 & $2.4\times10^3$ (tabla) & 0.42\\
+  &   &              &     &       &      & $2.4\times10^4$ (gráfica) & 4.18\\
+4 & 12 & \ang{2.39} & 960 & 23.98 & \num{23020} & 15 & \num{6.5e-4}\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\noindent Dos observaciones. Primero, los casos~1 y~2 están deliberadamente sobre la curva
+($D/\Dmin\approx1$). Segundo, el caso~3 tiene dos valores distintos en el artículo: su
+tabla dice $D\approx2.4\times10^3\lambda$, que queda \emph{debajo} de la curva, mientras que
+en su gráfica el punto aparece en $\approx2.4\times10^4\lambda$, encima de ella. En el
+\cref{cap:resultados} se simulan ambos.
+
+\section{La variable relevante: el número de Fresnel de una neurona}\label{sec:fresnel-neurona}
+
+El criterio \eqref{eq:dmin} combina tres longitudes ($d_f$, $D$ y $\lambda$) y el número de
+neuronas. En el régimen paraxial pueden reducirse a dos números adimensionales.
+
+\begin{proposicion}\label{prop:fresnel}
+En la aproximación de Fresnel, dos sistemas con el mismo número de neuronas $\sqrt N$, el
+mismo número de capas y el mismo \emph{número de Fresnel de una neurona}
+\begin{equation}
+  N_{F,n}\equiv\frac{d_f^2}{\lambda D}
+  \label{eq:nf-neurona}
+\end{equation}
+son ópticamente equivalentes: con las mismas fases producen la misma distribución de
+intensidad relativa en el plano de salida.
+\end{proposicion}
+
+\begin{proof}
+En la malla numérica (\cref{cap:numerico}) las frecuencias son $u=m/(N_pd_f)$ con $m$ entero
+y $N_p=2\sqrt N$. El factor de Fresnel de \eqref{eq:fresnel-tf} vale entonces
+\[
+  e^{-\jj\pi\lambda D(u^2+v^2)}
+  =\exp\!\left[-\jj\pi\,\frac{\lambda D}{d_f^2}\,\frac{m^2+m'^2}{N_p^2}\right]
+  =\exp\!\left[-\jj\pi\,\frac{m^2+m'^2}{N_{F,n}\,N_p^2}\right],
+\]
+que depende sólo de $N_{F,n}$ y de $N_p$. El factor restante $e^{\jj kD}$ es una fase global
+que no altera intensidades. Como las máscaras de fase y los detectores se definen en
+unidades de neurona, todo el sistema queda determinado por $N_{F,n}$, $\sqrt N$ y $L$.
+\end{proof}
+
+Con \eqref{eq:dmin-paraxial}, el cociente que gobierna la conectividad es
+\begin{equation}
+  \frac{D}{\Dmin}\approx\frac{\lambda D}{2\sqrt N\,d_f^2}=\frac{1}{2\sqrt N\,N_{F,n}} .
+  \label{eq:ratio-nf}
+\end{equation}
+Así, \textbf{en el régimen paraxial el criterio de \textcite{chen2021} es una condición
+sobre el número de Fresnel de una neurona}: $N_{F,n}\le 1/(2\sqrt N)$. \Cref{prop:fresnel}
+predice que, si se grafica la precisión contra $D/\Dmin$, las curvas de distintos $d_f\gg\lambda$ deben
+coincidir exactamente. El barrido de la \cref{sec:barrido} lo confirma.
+
+Desde el punto de vista físico, $N_{F,n}=d_f^2/(\lambda D)$ mide cuántas zonas de Fresnel de
+semi-período abarca una neurona de lado $d_f$ cuando se la observa desde la capa siguiente a
+distancia $D$. Este único parámetro separa los dos regímenes opuestos del sistema:
+\begin{itemize}
+  \item \textbf{Régimen geométrico o de sombra ($N_{F,n}\gg 1$):} cada neurona subtiende muchas
+  zonas de Fresnel y la propagación apenas ensancha su perfil transversal antes de alcanzar la
+  siguiente máscara. En el caso~4 de la Fig.~6 ($d_f=12\lambda$, $D=15\lambda$), se tiene
+  $N_{F,n}=9.6$: el radio de difracción controlada vale $R\approx 0.6\lambda\ll d_f$, de modo
+  que cada píxel prácticamente sólo ilumina al píxel enfrentado y la capa de solo fase resulta
+  incapaz de mezclar información espacial.
+  \item \textbf{Régimen difractivo o de conectividad neuronal ($N_{F,n}\ll 1$):} aunque la capa
+  completa de lado $w=\sqrt N\,d_f$ permanece profundamente en campo cercano ($N_F =
+  w^2/(4\lambda D) = N\,N_{F,n}/4\approx 126$ en el diseño de \SI{4}{mm}), cada neurona
+  individual ya se halla en su campo lejano de Fraunhofer ($N_{F,n}\ll 1$). La condición
+  $N_{F,n}\le 1/(2\sqrt N)$ (\num{5e-4} para $\sqrt N=1000$, o \num{6.25e-3} para
+  $\sqrt N=80$) exige precisamente que el lóbulo controlable de cada neurona individual se
+  ensanche hasta cubrir las $\sqrt N$ neuronas de la capa siguiente.
+\end{itemize}

@@ -1,0 +1,330 @@
+% =====================================================================
+\chapter{Modelo de la red neuronal difractiva}\label{cap:modelo}
+% =====================================================================
+
+Con la propagación libre resuelta en el \cref{cap:difraccion}, este capítulo construye el
+modelo completo de la red: cómo actúa una capa, cómo se encadenan las capas, cómo se
+convierte la luz de salida en una clasificación y cómo se calcula el gradiente necesario
+para entrenarla.
+
+\section{Descripción del sistema}\label{sec:sistema}
+
+\Cref{fig:sistema} resume el arreglo de \textcite{chen2021}. Un láser de He--Ne se
+expande y filtra espacialmente con dos lentes y un orificio, de modo que una onda plana
+ilumina el objeto de entrada: un dígito escrito a mano grabado como máscara binaria de cromo
+sobre vidrio. La luz atraviesa cinco capas difractivas de solo fase, separadas por
+$D\approx\SI{5}{cm}$, y llega a un plano de salida con once regiones de detección: una por
+cada dígito del 0 al 9 y una clase adicional ``X'' para dígitos tapados o alterados. La
+clase asignada es la del detector que recibe más energía. \Cref{tab:parametros} reúne los
+parámetros.
+
+\begin{figure}[htb]
+\centering
+\begin{tikzpicture}[x=0.93cm,y=1cm,>={Stealth[length=2mm]},
+  capa/.style={fill=udlap!25,draw=udlaposcuro,thick},
+  plano/.style={fill=gray!10,draw=gray!70,thick}]
+  % haz
+  \fill[red!12] (0.9,-0.25) -- (2.3,-0.9) -- (13.0,-0.9) -- (13.0,0.9) -- (2.3,0.9) -- cycle;
+  % láser
+  \draw[fill=gray!60,rounded corners=2pt] (-0.9,-0.35) rectangle (0.9,0.35);
+  \node[font=\scriptsize,white] at (0,0) {He--Ne};
+  \node[font=\scriptsize,below] at (0,-0.4) {\SI{632.8}{nm}};
+  % lentes y orificio
+  \draw[thick,azulfig] (1.6,0) ellipse (0.07 and 0.45);
+  \draw[very thick] (1.95,0.5) -- (1.95,0.06) (1.95,-0.06) -- (1.95,-0.5);
+  \draw[thick,azulfig] (2.6,0) ellipse (0.12 and 1.05);
+  \node[font=\scriptsize,align=center,below] at (2.1,-1.1) {lentes y\\orificio};
+  % planos oblicuos
+  \newcommand{\placa}[3]{%
+    \draw[#3] ($(#1,0)+(-0.25,-1.15)$) -- ($(#1,0)+(0.25,-0.75)$) -- ($(#1,0)+(0.25,1.35)$)
+             -- ($(#1,0)+(-0.25,0.95)$) -- cycle;
+    \node[font=\scriptsize,below] at ($(#1,0)+(0,-1.2)$) {#2};}
+  \placa{3.6}{entrada}{plano}
+  \node at (3.6,0.1) {\scriptsize\bfseries 3};
+  \foreach \l/\x in {1/5.0,2/6.4,3/7.8,4/9.2,5/10.6} {\placa{\x}{$L_{\l}$}{capa}}
+  \placa{12.2}{salida}{plano}
+  \foreach \yy in {-0.6,0,0.6} \draw[fill=white,draw=red!70!black] ($(12.2,\yy)+(-0.06,-0.08)$) rectangle ($(12.2,\yy)+(0.1,0.12)$);
+  % distancias
+  \draw[<->] (5.0,1.65) -- (6.4,1.65) node[midway,above,font=\scriptsize] {$D\approx\SI{5}{cm}$};
+  \draw[decorate,decoration={brace,amplitude=4pt,mirror}] (4.75,-1.65) -- (10.85,-1.65)
+     node[midway,below=4pt,font=\scriptsize] {5 capas de $1000\times1000$ neuronas de \SI{4}{\micro m}};
+  \draw[->,thick] (13.0,0) -- (13.8,0) node[right,font=\scriptsize,align=left] {$\argmax_k E_k$};
+\end{tikzpicture}
+\caption[Esquema del sistema]{Esquema del clasificador de \textcite{chen2021}. La onda
+plana modulada por el dígito atraviesa cinco capas de solo fase; cada detector del plano de
+salida integra la intensidad sobre su área.}
+\label{fig:sistema}
+\end{figure}
+
+\begin{table}[htb]
+\centering
+\caption{Parámetros del sistema de \textcite{chen2021} y de los casos de su Fig.~6.}
+\label{tab:parametros}
+\begin{tabular}{@{}lll@{}}
+\toprule
+Parámetro & Sistema completo & Casos de la Fig.~6 \\
+\midrule
+Longitud de onda $\lambda$ & \SI{632.8}{nm} & \SI{632.8}{nm}\\
+Neuronas por capa & $1000\times1000$ & $80\times80$\\
+Tamaño de neurona $d_f$ & \SI{4}{\micro m} ($6.32\lambda$) & $0.53\lambda$ a $12\lambda$\\
+Lado de la capa $w$ & \SI{4}{mm} & $\sqrt N d_f$\\
+Distancia entre capas $D$ & \SI{\approx5}{cm} & $15\lambda$ a $2.4\times10^4\lambda$\\
+Número de capas & 5 & 5\\
+Clases & 11 (0--9 y X) & 10 (0--9)\\
+Imágenes de entrenamiento & \num{55000} MNIST + \num{25000} cambiadas & \num{10000} MNIST\\
+Imágenes de prueba & \num{10000} + \num{1000} & 500\\
+Optimizador & Adam, tasa \num{e-3}, 20 épocas & ---\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{La capa difractiva}\label{sec:capa}
+
+Cada neurona $i$ de la capa $l$ multiplica el campo incidente por su transmitancia compleja
+\begin{equation}
+  t^l_i=a^l_i\,e^{\jj\Phi^l_i}.
+  \label{eq:transmitancia}
+\end{equation}
+En una red de solo fase la amplitud es constante, $a^l_i=1$, y sólo se entrena la fase
+$\Phi^l_i$ \parencite[Ec.~1]{chen2021}. Si $Y^l$ es el campo que incide sobre la capa $l$, el
+campo inmediatamente después de ella es el producto punto a punto (de Hadamard)
+\begin{equation}
+  W^{l+1}=Y^l\circ t^l .
+  \label{eq:hadamard}
+\end{equation}
+
+\subsection{De la fase a la altura grabada}
+
+La fase se obtiene grabando un relieve en el sustrato. Una columna de vidrio de altura
+$\Delta h$ y otra de aire de la misma altura difieren en camino óptico en $\Delta n\,\Delta h$, con
+$\Delta n=n_{\text{sustrato}}-n_{\text{aire}}$. La diferencia de fase correspondiente es
+\begin{equation}
+  \Phi=\frac{2\pi}{\lambda}\,\Delta n\,\Delta h
+  \qquad\Longrightarrow\qquad
+  \Delta h=\frac{\lambda\,\Phi}{2\pi\,\Delta n},
+  \label{eq:altura}
+\end{equation}
+que es la relación que usan \textcite{chen2021} para fabricar las capas. Para facilitar la
+fabricación, los autores restringen la fase al intervalo $[0,\pi]$ mediante una función
+sigmoide; en este trabajo se escribe $\Phi=\pi\,\sigma(\theta)$, con
+$\sigma(\theta)=1/(1+e^{-\theta})$ y $\theta$ el parámetro que se entrena.
+
+\begin{calculo}[Altura máxima del relieve en sílice fundida]
+El índice de la sílice fundida a \SI{632.8}{nm} es $n=1.4570$ \parencite{malitson1965}, de modo
+que $\Delta n=0.457$. Para la fase máxima $\Phi=\pi$:
+\[
+  \Delta h_{\pi}=\frac{\lambda}{2\Delta n}=\frac{\SI{632.8}{nm}}{2\times0.457}=\SI{692}{nm}.
+\]
+Con $2^s$ niveles de fase equiespaciados, un proceso de litografía de $s$ pasos graba
+escalones de $\Delta h_\pi/(2^s-1)$; con $s=3$ (8 niveles), \SI{98.9}{nm} por escalón.
+\end{calculo}
+
+\begin{calculo}[Pérdidas por reflexión, ignoradas en el artículo]
+A incidencia normal, la reflectancia de Fresnel de una interfaz aire--vidrio es
+$R=\bigl[(n-1)/(n+1)\bigr]^2=(0.457/2.457)^2=\SI{3.46}{\percent}$
+\parencite[sec.~4.6]{hecht2017}. Cinco capas tienen diez interfaces, así que la
+transmisión total es $(1-R)^{10}\approx\SI{70}{\percent}$. Como el factor es el mismo para todos
+los detectores, no cambia la clasificación, pero sí reduce la señal disponible en el
+experimento.
+\end{calculo}
+
+\section{Propagación entre capas}\label{sec:propagacion}
+
+Entre la capa $l$ y la $l+1$ el campo se propaga una distancia $D$ en el espacio libre. Por
+\eqref{eq:asm},
+\begin{equation}
+  Y^{l+1}=\mathcal{P}_D\bigl\{W^{l+1}\bigr\}
+         =\IFT\Bigl\{\FT\{Y^l\circ t^l\}\cdot H(u,v;D)\Bigr\},
+  \label{eq:capa-a-capa}
+\end{equation}
+que es la versión corregida de la Ec.~5 de \textcite{chen2021} (ver la observación de la
+\cref{sec:espectro-angular}). Encadenando la entrada, las $L$ capas y el plano de salida,
+\begin{equation}
+  Y^{\text{sal}}=\mathcal{P}_D\,\mathcal{T}^{L}\,\mathcal{P}_D\,\mathcal{T}^{L-1}\cdots
+                 \mathcal{P}_D\,\mathcal{T}^{1}\,\mathcal{P}_D\;Y^{\text{ent}}
+               \equiv\mathcal{M}\,Y^{\text{ent}},
+  \label{eq:cadena}
+\end{equation}
+donde $\mathcal{T}^l$ denota la multiplicación por $t^l$.
+
+\paragraph{Consecuencia: la red es lineal en el campo.} Cada factor de \eqref{eq:cadena} es
+lineal, así que toda la red equivale a un único operador lineal $\mathcal{M}$ que depende de
+las fases. La única no linealidad está en la detección, que mide intensidad. Si
+$\mathcal{S}_k$ selecciona los píxeles del detector $k$, la energía detectada es una forma
+cuadrática del campo de entrada:
+\begin{equation}
+  E_k=\iint_{\text{det}_k}\bigl|Y^{\text{sal}}\bigr|^2\dd x\dd y
+     =\bigl\langle Y^{\text{ent}},\;\mathcal{M}^\dagger\mathcal{S}_k\mathcal{M}\,Y^{\text{ent}}\bigr\rangle .
+  \label{eq:cuadratica}
+\end{equation}
+Esto ayuda a entender por qué una D\textsuperscript{2}NN de solo fase alcanza alrededor del
+\SI{91}{\percent} en MNIST mientras que una red electrónica no lineal supera el
+\SI{99}{\percent} \parencite{lecun1998}: apilar más capas cambia $\mathcal{M}$ pero no añade
+no linealidades \parencite{mengu2020}.
+
+\section{Detectores y función de pérdida}\label{sec:perdida}
+
+La red asigna la clase $\hat y=\argmax_k E_k$. Para entrenarla se usa la entropía cruzada
+con softmax que menciona \textcite{chen2021}, aplicada a la energía \emph{relativa} de cada
+detector:
+\begin{equation}
+  s_k=T\,\frac{E_k}{S},\qquad S=\sum_{j}E_j,\qquad
+  p_k=\frac{e^{s_k}}{\sum_j e^{s_j}},\qquad
+  \mathcal{L}=-\ln p_y ,
+  \label{eq:perdida}
+\end{equation}
+donde $y$ es la clase correcta y $T$ una ``temperatura'' (aquí $T=10$). Normalizar por $S$
+hace que la pérdida no dependa de la potencia del láser, que en el experimento es
+arbitraria. El artículo no especifica la normalización; ésta es una de las decisiones de la
+reproducción (\cref{tab:decisiones}).
+
+\section{Cálculo del gradiente}\label{sec:gradiente}
+
+Entrenar la red consiste en ajustar las fases para minimizar $\mathcal{L}$, lo que requiere
+$\partial\mathcal{L}/\partial\Phi^l_i$ para millones de neuronas. \textcite{chen2021} sólo
+indican que usan retropropagación del error con el optimizador Adam \parencite{kingma2015}.
+Aquí se deduce el gradiente de forma explícita. La dificultad es que $\mathcal{L}$ es real pero
+depende de campos complejos; la herramienta adecuada es el cálculo de Wirtinger
+\parencite{wirtinger1927,kreutzdelgado2009}, que trata $Y$ y su conjugado $Y^*$ como
+variables independientes.
+
+\paragraph{Paso 1: de la pérdida a las energías.} De \eqref{eq:perdida},
+$\partial\mathcal{L}/\partial s_k=p_k-\delta_{ky}$. Como
+$\partial s_k/\partial E_j=T\delta_{kj}/S-TE_k/S^2$, la regla de la cadena da
+\begin{equation}
+  \varepsilon_j\equiv\frac{\partial\mathcal{L}}{\partial E_j}
+  =\frac{T}{S}\Bigl[(p_j-\delta_{jy})-\sum_k (p_k-\delta_{ky})\frac{E_k}{S}\Bigr].
+  \label{eq:paso1}
+\end{equation}
+$\varepsilon_j$ es positivo en los detectores que reciben ``demasiada'' luz y negativo en el
+correcto.
+
+\paragraph{Paso 2: de las energías a la intensidad en cada píxel.} Como
+$E_j=\sum_{i\in\text{det}_j}I_i$,
+\begin{equation}
+  c_i\equiv\frac{\partial\mathcal{L}}{\partial I_i}=\sum_j\varepsilon_j\,[\,i\in\text{det}_j\,],
+  \label{eq:paso2}
+\end{equation}
+que vale $\varepsilon_j$ dentro del detector $j$ y cero fuera de los detectores.
+
+\paragraph{Paso 3: el campo de error en la salida.} La intensidad es $I_i=Y_iY_i^*$, así que
+$\partial I_i/\partial Y_i^*=Y_i$. Definimos el \emph{campo de error}
+$G\equiv\partial\mathcal{L}/\partial Y^*$; en el plano de salida,
+\begin{equation}
+  G^{\text{sal}}_i=c_i\,Y^{\text{sal}}_i .
+  \label{eq:paso3}
+\end{equation}
+Es el propio campo de salida, enmascarado por los detectores y ponderado por el error de cada
+uno.
+
+\paragraph{Paso 4: retropropagación a través de un operador lineal.} Sea $Y'=\mathcal{A}Y$
+con $\mathcal{A}$ lineal. Para una función real, $\dd\mathcal{L}=2\Real\{\langle G',\dd Y'\rangle\}$
+\parencite{kreutzdelgado2009}, donde $G'=\partial\mathcal{L}/\partial Y'^*$. Entonces
+\begin{equation}
+  \dd\mathcal{L}=2\Real\{\langle G',\mathcal{A}\dd Y\rangle\}
+               =2\Real\{\langle \mathcal{A}^\dagger G',\dd Y\rangle\}
+  \quad\Longrightarrow\quad
+  G=\mathcal{A}^\dagger G' .
+  \label{eq:paso4}
+\end{equation}
+Para la propagación, $\mathcal{P}_D=\IFT\,\mathrm{diag}(H)\,\FT$ y, como la transformada de
+Fourier normalizada es unitaria,
+\begin{equation}
+  \mathcal{P}_D^\dagger=\IFT\,\mathrm{diag}(H^*)\,\FT,\qquad
+  H^*(u,v;D)=e^{-\jj kD\cos\gamma}=H(u,v;-D)\quad(\text{ondas propagantes}).
+  \label{eq:adjunto}
+\end{equation}
+\textbf{El error se retropropaga propagando el campo de error una distancia $-D$}: es una
+onda que viaja ``hacia atrás'' por el sistema. Para una capa, $\mathcal{T}^\dagger$ multiplica
+por $t^*=e^{-\jj\Phi}$.
+
+\paragraph{Paso 5: el gradiente respecto a la fase.} Justo después de la capa,
+$W_i=Y_it_i=Y_ie^{\jj\Phi_i}$, de modo que $\dd W_i=\jj W_i\dd\Phi_i$. Con $G^W$ el campo de
+error en ese plano,
+\begin{equation}
+  \frac{\partial\mathcal{L}}{\partial\Phi_i}
+  =2\Real\bigl\{(G^W_i)^*\,\jj W_i\bigr\}
+  =2\,\Imag\bigl\{G^W_i\,W_i^*\bigr\}.
+  \label{eq:gradiente}
+\end{equation}
+Finalmente, con $\Phi=\pi\sigma(\theta)$, $\partial\Phi/\partial\theta=\pi\sigma(1-\sigma)=\Phi(\pi-\Phi)/\pi$.
+
+\begin{resultado}{Interpretación física del gradiente}
+\Cref{eq:gradiente} dice que el gradiente en cada neurona es un \emph{término de
+interferencia} entre la onda que viaja hacia adelante ($W$) y la onda de error que viaja
+hacia atrás ($G^W$), evaluadas en el mismo plano (\cref{fig:adjunto}). Es formalmente el mismo
+producto que registra un holograma. En consecuencia, el gradiente de \emph{todas} las
+neuronas se obtiene con una sola propagación hacia adelante y una hacia atrás, sin importar
+cuántas neuronas haya. La diferenciación automática de PyTorch \parencite{paszke2019}, usada
+en este trabajo, realiza exactamente este cálculo.
+\end{resultado}
+
+\begin{figure}[htb]
+\centering
+\begin{tikzpicture}[x=0.95cm,y=1cm,>={Stealth[length=2mm]},
+   nodo/.style={draw,rounded corners=2pt,minimum width=1.25cm,minimum height=0.75cm,font=\small,fill=white},
+   mascara/.style={nodo,fill=udlap!25,draw=udlaposcuro}]
+  % fila hacia adelante
+  \node[nodo] (in) at (0,0) {$Y^{\text{ent}}$};
+  \node[mascara] (t1) at (2.7,0) {$\circ\,t^1$};
+  \node[mascara] (t2) at (5.4,0) {$\circ\,t^2$};
+  \node (dots) at (7.4,0) {$\cdots$};
+  \node[mascara] (tL) at (9.4,0) {$\circ\,t^L$};
+  \node[nodo] (I) at (12.6,0) {$|\cdot|^2,\ \mathcal{L}$};
+  \draw[->,thick] (in) -- node[above,font=\scriptsize]{$\mathcal{P}_D$ ($H$)} (t1);
+  \draw[->,thick] (t1) -- node[above,font=\scriptsize]{$\mathcal{P}_D$} (t2);
+  \draw[->,thick] (t2) -- (dots);
+  \draw[->,thick] (dots) -- (tL);
+  \draw[->,thick] (tL) -- node[above,font=\scriptsize]{$\mathcal{P}_D$} (I);
+  % fila hacia atrás
+  \node[nodo,draw=azulfig] (g1) at (2.7,-2.4) {$G^{W,1}$};
+  \node[nodo,draw=azulfig] (g2) at (5.4,-2.4) {$G^{W,2}$};
+  \node (dots2) at (7.4,-2.4) {$\cdots$};
+  \node[nodo,draw=azulfig] (gL) at (9.4,-2.4) {$G^{W,L}$};
+  \node[nodo,draw=azulfig] (gs) at (12.6,-2.4) {$G^{\text{sal}}=c\,Y^{\text{sal}}$};
+  \draw[->,thick,azulfig] (I) -- (gs);
+  \draw[->,thick,azulfig] (gs) -- node[below=2pt,font=\scriptsize]{$\mathcal{P}_D^\dagger$ ($H^*$)} (gL);
+  \draw[->,thick,azulfig] (gL) -- (dots2);
+  \draw[->,thick,azulfig] (dots2) -- node[below=2pt,font=\scriptsize]{$\mathcal{T}^\dagger,\mathcal{P}_D^\dagger$} (g2);
+  \draw[->,thick,azulfig] (g2) -- node[below=2pt,font=\scriptsize]{$\mathcal{T}^\dagger,\mathcal{P}_D^\dagger$} (g1);
+  % gradientes
+  \foreach \a/\b/\l in {t1/g1/1,t2/g2/2,tL/gL/L}{
+     \draw[->,dashed,udlaposcuro] (\a) -- (\b);
+     \node[font=\scriptsize,udlaposcuro,fill=white,inner sep=1pt] at ($(\a)!0.5!(\b)$)
+         {$2\,\Imag\{G^{W}W^*\}$};}
+  \node[font=\small,anchor=west] at (-1.0,0.75) {hacia adelante};
+  \node[font=\small,anchor=west,azulfig] at (-1.0,-3.2) {hacia atrás (error)};
+\end{tikzpicture}
+\caption[Cálculo del gradiente por retropropagación]{Cálculo del gradiente. La fila
+superior es la propagación del campo; la inferior, la del campo de error, que viaja en
+sentido opuesto con la función de transferencia conjugada (\cref{eq:adjunto}). En cada capa,
+el gradiente es el término de interferencia de ambas ondas (\cref{eq:gradiente}).}
+\label{fig:adjunto}
+\end{figure}
+
+\subsection{Comprobación numérica}
+
+Para verificar la deducción, el script \texttt{scripts/07\_check\_gradient.py} del repositorio
+\parencite{repo2026} implementa los pasos 1 a 5 a mano en una red de $32\times32$ neuronas y
+cinco capas con fases aleatorias, y compara el resultado con el gradiente que calcula
+PyTorch por diferenciación automática. En la implementación discreta el campo se rellena con
+ceros antes de la FFT y se recorta después (\cref{cap:numerico}); como el recorte es el
+adjunto del relleno, el operador adjunto conserva la forma \eqref{eq:adjunto}.
+
+\begin{table}[htb]
+\centering
+\caption{Error relativo $\lVert g_{\text{analítico}}-g_{\text{PyTorch}}\rVert/\lVert g_{\text{PyTorch}}\rVert$
+entre el gradiente de \cref{eq:gradiente} y el de la diferenciación automática (doble precisión).}
+\label{tab:gradiente}
+\begin{tabular}{@{}cccccc@{}}
+\toprule
+Capa 1 & Capa 2 & Capa 3 & Capa 4 & Capa 5 & Total\\
+\midrule
+\num{4.7e-13} & \num{4.9e-13} & \num{4.8e-13} & \num{4.8e-13} & \num{4.9e-13} & \num{4.9e-13}\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\noindent Las diferencias están al nivel del redondeo en doble precisión, de modo que
+\cref{eq:paso1,eq:paso2,eq:paso3,eq:paso4,eq:adjunto,eq:gradiente} describen exactamente el
+cálculo que realiza el entrenamiento.

@@ -1,0 +1,353 @@
+% =====================================================================
+\chapter{Fundamentos de difracción escalar}\label{cap:difraccion}
+% =====================================================================
+
+Este capítulo construye, desde las ecuaciones de Maxwell, la herramienta que usa todo el
+modelo: la propagación de un campo escalar entre dos planos paralelos. Se sigue la
+exposición de \textcite[caps.~3--4]{goodman2005}, con la notación de \textcite{chen2021}.
+
+\section{De las ecuaciones de Maxwell a la ecuación de Helmholtz}\label{sec:helmholtz}
+
+En un medio lineal, isótropo, homogéneo y no dispersivo, sin cargas ni corrientes libres,
+cada componente cartesiana del campo eléctrico satisface la ecuación de onda
+\parencite[sec.~3.2]{goodman2005}
+\begin{equation}
+  \nabla^2 \mathcal{U}(\bm r,t)-\frac{n^2}{c^2}\frac{\partial^2 \mathcal{U}(\bm r,t)}{\partial t^2}=0,
+  \label{eq:onda}
+\end{equation}
+donde $n$ es el índice de refracción y $c$ la velocidad de la luz en el vacío. Para luz
+monocromática escribimos
+\begin{equation}
+  \mathcal{U}(\bm r,t)=\Real\!\left\{U(\bm r)\,e^{-\jj\omega t}\right\},
+  \label{eq:fasor}
+\end{equation}
+donde $U(\bm r)$ es la \emph{amplitud compleja}. Al sustituir \eqref{eq:fasor} en
+\eqref{eq:onda}, la derivada temporal produce un factor $(-\jj\omega)^2=-\omega^2$, y se obtiene
+la \emph{ecuación de Helmholtz}
+\begin{equation}
+  \left(\nabla^2+k^2\right)U(\bm r)=0,\qquad k=\frac{n\omega}{c}=\frac{2\pi n}{\lambda}.
+  \label{eq:helmholtz}
+\end{equation}
+En aire ($n\approx1$) y con $\lambda=\SI{632.8}{nm}$, el número de onda vale
+$k=2\pi/\lambda=\SI{9.93e6}{m^{-1}}$.
+
+\paragraph{Convención de signos.} Con la dependencia temporal $e^{-\jj\omega t}$ de
+\eqref{eq:fasor}, una onda plana que avanza hacia $+z$ se escribe $e^{+\jj kz}$. Es la misma
+convención que usa \textcite{chen2021} en su Ec.~2.
+
+\paragraph{Validez de la aproximación escalar.} Tratar cada componente por separado ignora
+el acoplamiento entre componentes que introducen los bordes de las aperturas. Ese
+acoplamiento es despreciable si las estructuras son mucho mayores que $\lambda$ y el campo se
+observa lejos de ellas \parencite[sec.~3.2]{goodman2005}. En el sistema del artículo
+$d_f=\SI{4}{\micro m}\approx6.3\lambda$, de modo que la aproximación es razonable. En cambio, el
+caso~1 de su Fig.~6 ($d_f=0.53\lambda$) queda fuera de su rango de validez; volveremos a
+esto en el \cref{cap:conclusiones}.
+
+\section{Principio de Huygens--Fresnel e integral de Rayleigh--Sommerfeld}\label{sec:rs}
+
+Supongamos que conocemos el campo $U(x',y',0)$ en el plano $z=0$ y que todas las fuentes
+están en $z<0$. Aplicando el teorema de Green con una función de Green que se anula en el
+plano $z=0$ (\cref{ap:rs}) se obtiene la \emph{integral de Rayleigh--Sommerfeld de primera
+especie} \parencite[sec.~3.5]{goodman2005}:
+\begin{equation}
+  U(x,y,z)=\iint_{-\infty}^{\infty} U(x',y',0)\;h(x-x',y-y',z)\dd x'\dd y',
+  \label{eq:rs}
+\end{equation}
+con la \emph{respuesta al impulso}
+\begin{equation}
+  h(x,y,z)=\frac{z}{2\pi r^2}\left(\frac{1}{r}-\jj k\right)e^{\jj kr},
+  \qquad r=\sqrt{x^2+y^2+z^2}.
+  \label{eq:h-rs}
+\end{equation}
+Cuando $r\gg\lambda$ domina el término $-\jj k$, y como $-\jj k/(2\pi)=1/(\jj\lambda)$,
+\begin{equation}
+  h(x,y,z)\approx\frac{1}{\jj\lambda}\,\frac{z}{r}\,\frac{e^{\jj kr}}{r}.
+  \label{eq:huygens}
+\end{equation}
+\Cref{eq:huygens} expresa matemáticamente el principio de Huygens--Fresnel
+(\cref{fig:huygens}): cada punto del plano $z=0$ emite una onda esférica secundaria
+$e^{\jj kr}/r$, adelantada un cuarto de periodo (factor $1/\jj$), con amplitud proporcional a
+$1/\lambda$ y modulada por el factor de oblicuidad $z/r=\cos\theta$. En una D\textsuperscript{2}NN
+estas ondas secundarias son precisamente las ``conexiones'' entre una neurona y las de la
+capa siguiente.
+
+\begin{figure}[htb]
+\centering
+\begin{tikzpicture}[scale=1.0,>={Stealth[length=2.2mm]}]
+  % plano de la apertura
+  \fill[gray!15] (0,-2.6) rectangle (0.18,2.6);
+  \draw[thick] (0.18,-2.6) -- (0.18,2.6);
+  \node[above] at (0.1,2.6) {\small plano $z=0$};
+  % frente incidente
+  \foreach \x in {-2.4,-1.8,-1.2} \draw[azulfig!70,thick] (\x,-2.2) -- (\x,2.2);
+  \draw[->,azulfig,thick] (-2.6,0) -- (-0.6,0) node[midway,above] {\small onda incidente};
+  % fuentes secundarias y ondas esféricas
+  \foreach \y in {-1.6,-0.8,0,0.8,1.6}{
+     \fill[udlap] (0.18,\y) circle (1.6pt);
+     \foreach \r in {0.5,1.0,1.5}
+        \draw[udlap!70] ($(0.18,\y)+(-80:\r)$) arc (-80:80:\r);
+  }
+  % envolvente
+  \draw[udlaposcuro,very thick,dashed] (1.70,-2.2) -- (1.70,2.2);
+  \node[udlaposcuro,right,align=left] at (1.85,1.9) {\small envolvente:\\ \small nuevo frente};
+  % punto de observación
+  \coordinate (P) at (5.6,0.9);
+  \fill (P) circle (1.8pt) node[right] {\small $P(x,y,z)$};
+  \draw[->,gray] (0.18,-0.8) -- (P) node[midway,below,sloped] {\small $r$};
+  \draw[gray,dashed] (0.18,-0.8) -- (5.6,-0.8);
+  \draw[gray] ($(0.18,-0.8)+(1.4,0)$) arc (0:{atan(1.7/5.42)}:1.4);
+  \node[gray] at (1.95,-0.55) {\small $\theta$};
+  \draw[->] (0.18,-2.9) -- (6.2,-2.9) node[right] {$z$};
+\end{tikzpicture}
+\caption[Principio de Huygens--Fresnel]{Principio de Huygens--Fresnel. Cada punto del
+plano $z=0$ actúa como fuente de una onda esférica secundaria; el campo en $P$ es la
+superposición de todas ellas ponderada por el factor de oblicuidad $\cos\theta=z/r$
+(\cref{eq:huygens}).}
+\label{fig:huygens}
+\end{figure}
+
+\section{Espectro angular de ondas planas}\label{sec:espectro-angular}
+
+La integral \eqref{eq:rs} es una convolución bidimensional, lo que sugiere trabajar en el
+dominio de Fourier. Escribimos el campo en cualquier plano $z$ como una superposición de
+ondas planas \parencite[sec.~3.10]{goodman2005}:
+\begin{equation}
+  \begin{aligned}
+  U(x,y,z)&=\iint_{-\infty}^{\infty}A(u,v;z)\,e^{\jj2\pi(ux+vy)}\dd u\dd v,\\
+  A(u,v;z)&=\iint_{-\infty}^{\infty}U(x,y,z)\,e^{-\jj2\pi(ux+vy)}\dd x\dd y,
+  \end{aligned}
+  \label{eq:espectro}
+\end{equation}
+donde $u$ y $v$ son \emph{frecuencias espaciales} (en \si{m^{-1}}) y $A(u,v;z)$ es el
+\emph{espectro angular} del campo en el plano $z$.
+
+\subsection{Significado físico de las frecuencias espaciales}
+
+Una onda plana de amplitud unitaria cuyo vector de onda forma los ángulos $\alpha$, $\beta$
+y $\gamma$ con los ejes $x$, $y$ y $z$ (\cref{fig:cosenos}) es
+\begin{equation}
+  e^{\jj\bm k\cdot\bm r}=\exp\!\left[\jj k\left(x\cos\alpha+y\cos\beta+z\cos\gamma\right)\right],
+  \qquad \cos^2\alpha+\cos^2\beta+\cos^2\gamma=1 .
+  \label{eq:onda-plana}
+\end{equation}
+En el plano $z=0$ esta onda vale $\exp[\jj2\pi(x\cos\alpha/\lambda+y\cos\beta/\lambda)]$.
+Comparando con el núcleo de \eqref{eq:espectro} se identifica
+\begin{equation}
+  u=\frac{\cos\alpha}{\lambda},\qquad v=\frac{\cos\beta}{\lambda},\qquad
+  \cos\gamma=\sqrt{1-\lambda^2\left(u^2+v^2\right)} .
+  \label{eq:cosenos}
+\end{equation}
+Así, cada par $(u,v)$ corresponde a una onda plana que viaja en una dirección concreta: las
+frecuencias espaciales altas son ondas muy inclinadas. Esta es la definición de $u$ y $v$
+que usa \textcite{chen2021} entre sus Ecs.~2 y~3.
+
+\begin{figure}[htb]
+\centering
+\tdplotsetmaincoords{70}{125}
+\begin{tikzpicture}[tdplot_main_coords,scale=3.2,>={Stealth[length=2mm]}]
+  \draw[->] (0,0,0) -- (1.5,0,0) node[anchor=north east] {$x$};
+  \draw[->] (0,0,0) -- (0,1.5,0) node[anchor=north west] {$y$};
+  \draw[->] (0,0,0) -- (0,0,1.45) node[anchor=south] {$z$};
+  \coordinate (K) at (0.75,0.65,1.1);
+  \draw[->,very thick,udlap] (0,0,0) -- (K) node[anchor=south west] {$\bm k$};
+  \draw[dashed,gray] (K) -- (0.75,0.65,0) -- (0,0,0);
+  \draw[dashed,gray] (0.75,0.65,0) -- (0.75,0,0);
+  \draw[dashed,gray] (0.75,0.65,0) -- (0,0.65,0);
+  % ángulos
+  \tdplotdefinepoints(0,0,0)(1,0,0)(0.75,0.65,1.1)
+  \tdplotdrawpolytopearc[thick,azulfig]{0.5}{anchor=north}{$\alpha$}
+  \tdplotdefinepoints(0,0,0)(0,1,0)(0.75,0.65,1.1)
+  \tdplotdrawpolytopearc[thick,azulfig]{0.45}{anchor=north west}{$\beta$}
+  \tdplotdefinepoints(0,0,0)(0,0,1)(0.75,0.65,1.1)
+  \tdplotdrawpolytopearc[thick,azulfig]{0.55}{anchor=south west}{$\gamma$}
+\end{tikzpicture}
+\caption[Cosenos directores del vector de onda]{Ángulos del vector de onda $\bm k$ con los
+ejes coordenados. La componente de una onda plana con frecuencias espaciales $(u,v)$ viaja
+en la dirección dada por \cref{eq:cosenos}.}
+\label{fig:cosenos}
+\end{figure}
+
+\subsection{Propagación del espectro angular}
+
+Sustituimos la representación \eqref{eq:espectro} en la ecuación de Helmholtz
+\eqref{eq:helmholtz}. Las derivadas respecto a $x$ y $y$ actúan sólo sobre la exponencial y
+producen $\partial_x^2+\partial_y^2\to-4\pi^2(u^2+v^2)$; por lo tanto, para cada $(u,v)$,
+\begin{equation}
+  \frac{\dd^2A(u,v;z)}{\dd z^2}+k_z^2\,A(u,v;z)=0,
+  \qquad k_z=2\pi\sqrt{\frac{1}{\lambda^2}-u^2-v^2}=k\sqrt{1-\lambda^2(u^2+v^2)} .
+  \label{eq:edo}
+\end{equation}
+\Cref{eq:edo} es la ecuación de un oscilador armónico en la variable $z$. Su solución
+general es $A(z)=A_+e^{\jj k_zz}+A_-e^{-\jj k_zz}$. Como todas las fuentes están en $z<0$, sólo
+puede haber ondas que se alejan del plano inicial, y se descarta $A_-$. Imponiendo
+$A(u,v;0)$ como condición inicial,
+\begin{equation}
+  A(u,v;z)=A(u,v;0)\,\exp\!\left[\jj kz\sqrt{1-\lambda^2\left(u^2+v^2\right)}\right].
+  \label{eq:prop-espectro}
+\end{equation}
+Con \eqref{eq:cosenos}, el exponente es $\jj kz\cos\gamma$: cada onda plana acumula la fase
+correspondiente a recorrer la distancia $z$ en su propia dirección. Ésta es exactamente la
+Ec.~2 de \textcite{chen2021}, y su Ec.~3 es la misma expresión escrita con $u$ y $v$.
+
+\subsection{Función de transferencia del espacio libre}
+
+\Cref{eq:prop-espectro} dice que la propagación libre es un \emph{sistema lineal e
+invariante ante traslaciones} con función de transferencia
+\begin{equation}
+  H(u,v;z)=
+  \begin{cases}
+    \exp\!\left[\jj kz\sqrt{1-\lambda^2(u^2+v^2)}\right], & u^2+v^2\le 1/\lambda^2,\\[6pt]
+    \exp\!\left[-2\pi z\sqrt{u^2+v^2-1/\lambda^2}\right], & u^2+v^2> 1/\lambda^2,
+  \end{cases}
+  \label{eq:H}
+\end{equation}
+de modo que
+\begin{equation}
+  \boxed{\;U(x,y,z)=\IFT\Bigl\{\FT\{U(x,y,0)\}\cdot H(u,v;z)\Bigr\}.\;}
+  \label{eq:asm}
+\end{equation}
+La segunda rama de \eqref{eq:H} corresponde a las \emph{ondas evanescentes}: cuando
+$u^2+v^2>1/\lambda^2$ la raíz es imaginaria y la onda decae exponencialmente en $z$. Esas
+componentes describen detalles del campo menores que $\lambda$ y no llegan a la capa
+siguiente. Por el teorema de convolución, $H$ es la transformada de Fourier de la respuesta
+al impulso \eqref{eq:h-rs}, de modo que \eqref{eq:asm} y \eqref{eq:rs} son
+\emph{exactamente} equivalentes \parencite[sec.~3.10]{goodman2005}.
+
+\paragraph{Observación sobre la notación del artículo.} Las Ecs.~4 y~5 de
+\textcite{chen2021} escriben el campo de salida como el producto del campo $W^{l+1}$ por el
+factor de fase $\exp[\jj kd_l\sqrt{1-\lambda^2(u^2+v^2)}]$. Tomada literalmente, esa
+expresión mezcla una función de $(x,y)$ con una de $(u,v)$; el producto debe hacerse en el
+dominio de Fourier, como en \eqref{eq:asm}. En el \cref{cap:modelo} se usa la forma correcta.
+
+\section{Aproximaciones de Fresnel y Fraunhofer}\label{sec:fresnel}
+
+Muchos cursos de óptica resuelven la difracción con las aproximaciones de Fresnel o de
+Fraunhofer. Conviene comprobar si son válidas para este sistema, porque de ello depende qué
+propagador hay que usar.
+
+\paragraph{Aproximación de Fresnel.} Con $\rho^2=u^2+v^2$ y $s=\lambda^2\rho^2$, el desarrollo
+binomial $\sqrt{1-s}=1-\tfrac{s}{2}-\tfrac{s^2}{8}-\dots$ convierte \eqref{eq:H} en
+\begin{equation}
+  H(u,v;z)=e^{\jj kz}\;
+  \underbrace{e^{-\jj\pi\lambda z\rho^2}}_{\text{término de Fresnel}}\;
+  \underbrace{e^{-\jj kz\lambda^4\rho^4/8}}_{\text{se desprecia}}\cdots
+  \label{eq:fresnel-tf}
+\end{equation}
+La aproximación de Fresnel conserva sólo los dos primeros factores. Es válida si la fase
+del tercero es pequeña:
+\begin{equation}
+  \frac{kz\lambda^4\rho^4}{8}=\frac{\pi z\lambda^3\rho^4}{4}\ll 1 .
+  \label{eq:fresnel-cond}
+\end{equation}
+
+\begin{calculo}[¿Es válida la aproximación de Fresnel en el sistema del artículo?]
+La malla de neuronas sólo puede representar frecuencias hasta $\rho=1/(2d_f)$ en cada eje
+(\cref{sec:neurona}). Sustituyendo $\rho^4=1/(16d_f^4)$ en \eqref{eq:fresnel-cond}:
+\[
+  \frac{\pi z\lambda^3}{64\,d_f^4}
+  =\frac{\pi(\SI{0.05}{m})(\SI{632.8e-9}{m})^3}{64\,(\SI{4e-6}{m})^4}
+  =\frac{\pi\,(\num{1.267e-20})}{\num{1.638e-20}}
+  \approx\SI{2.4}{rad}.
+\]
+El término despreciado no es pequeño (en la diagonal, donde $\rho^4$ es cuatro veces
+mayor, llega a \SI{9.7}{rad}). \textbf{La aproximación de Fresnel no es válida} para las
+componentes más inclinadas; por eso en este trabajo se usa la función de transferencia
+exacta \eqref{eq:H}.
+\end{calculo}
+
+\paragraph{Aproximación de Fraunhofer.} Exige además $z\gg k a^2/2$, con $a$ la semianchura
+de la apertura \parencite[sec.~4.3]{goodman2005}. Para una capa de $w=\SI{4}{mm}$
+($a=\SI{2}{mm}$), $ka^2/2=\pi a^2/\lambda\approx\SI{19.9}{m}$, cuatrocientas veces la
+separación entre capas. El número de Fresnel de una capa,
+$N_F=a^2/(\lambda D)=(\SI{2}{mm})^2/(\SI{632.8}{nm}\times\SI{5}{cm})\approx126$, confirma que el
+sistema opera en \emph{campo cercano}: la luz no forma entre capas el patrón de Fraunhofer
+de la capa completa.
+
+\section{Difracción de una neurona y el ángulo máximo}\label{sec:neurona}
+
+\textcite{chen2021} afirman, citando a \textcite{lin2018}, que el semiángulo máximo de
+difracción de una neurona de tamaño $d_f$ es
+\begin{equation}
+  \varphi_{\max}=\arcsin\!\left(\frac{\lambda}{2d_f}\right),
+  \label{eq:phimax}
+\end{equation}
+sin justificarlo. Aquí se deduce y se explica el factor~2.
+
+\subsection{Una neurona aislada: la función sinc}
+
+Una neurona aislada es una apertura cuadrada de lado $d_f$: $t(x,y)=\rect(x/d_f)\rect(y/d_f)$.
+Su espectro angular es
+\begin{equation}
+  T(u,v)=d_f^2\,\sinc(d_fu)\,\sinc(d_fv),\qquad \sinc(x)\equiv\frac{\sin(\pi x)}{\pi x},
+  \label{eq:sinc}
+\end{equation}
+y, por \eqref{eq:cosenos}, la intensidad radiada en la dirección $\sin\theta=\lambda u$ es
+proporcional a $\sinc^2(d_f\sin\theta/\lambda)$ (\cref{fig:sinc}). El primer cero está en
+$d_fu=1$, es decir en $\sin\theta=\lambda/d_f$, \emph{no} en $\lambda/(2d_f)$. En la dirección
+$\sin\theta=\lambda/(2d_f)$ la intensidad aún vale $\sinc^2(1/2)=4/\pi^2\approx\SI{40.5}{\percent}$
+del máximo.
+
+\begin{figure}[htb]
+\centering
+\begin{tikzpicture}
+\begin{axis}[width=0.88\textwidth,height=6.2cm,
+  xlabel={$d_f\,u=d_f\sin\theta/\lambda$}, ylabel={$\sinc^2(d_fu)$},
+  xmin=-2.6,xmax=2.6,ymin=0,ymax=1.08,samples=400,domain=-2.6:2.6,
+  xtick={-2,-1,-0.5,0,0.5,1,2},
+  xticklabels={$-2$,$-1$,$-\tfrac12$,$0$,$\tfrac12$,$1$,$2$},
+  axis lines=left,grid=major,grid style={gray!20},
+  legend style={at={(0.98,0.97)},anchor=north east,font=\small,draw=none,fill=white}]
+  \addplot[name path=f,very thick,udlap] {x==0 ? 1 : (sin(deg(pi*x))/(pi*x))^2};
+  \addlegendentry{intensidad radiada por una neurona}
+  \path[name path=axis] (axis cs:-0.5,0) -- (axis cs:0.5,0);
+  \addplot[udlap!25] fill between[of=f and axis,soft clip={domain=-0.5:0.5}];
+  \addlegendentry{banda de Nyquist: \SI{77.4}{\percent} de la energía (1D)}
+  \draw[dashed,thick,azulfig] (axis cs:0.5,0) -- (axis cs:0.5,1.0)
+     node[above,font=\small,align=center] {$\sin\varphi_{\max}=\lambda/2d_f$};
+  \draw[dashed,thick,gray] (axis cs:1,0) -- (axis cs:1,0.55)
+     node[above,font=\small,align=center] {primer cero\\$\sin\theta=\lambda/d_f$};
+  \draw[dotted,thick] (axis cs:-2.6,0.405) -- (axis cs:0.5,0.405);
+  \node[font=\small,anchor=south west] at (axis cs:-2.55,0.41) {$4/\pi^2\approx0.405$};
+\end{axis}
+\end{tikzpicture}
+\caption[Patrón de difracción de una neurona]{Intensidad radiada por una neurona cuadrada
+en función de la frecuencia espacial. El área sombreada es la banda que la malla de
+neuronas puede controlar ($|u|\le1/2d_f$); su borde define $\varphi_{\max}$ (\cref{eq:phimax}).}
+\label{fig:sinc}
+\end{figure}
+
+\subsection{Una capa de neuronas: el teorema de muestreo}
+
+El factor~2 aparece al considerar la capa completa. Una capa de solo fase con neuronas de
+lado $d_f$ centradas en $x_i=i\,d_f$ tiene transmitancia
+\begin{equation}
+  t(x)=\sum_i t_i\,\rect\!\left(\frac{x-x_i}{d_f}\right)
+      =\Bigl[\sum_i t_i\,\delta(x-x_i)\Bigr]*\rect\!\left(\frac{x}{d_f}\right),
+  \qquad t_i=e^{\jj\Phi_i},
+  \label{eq:capa-muestreada}
+\end{equation}
+(en una dimensión, para simplificar). Por el teorema de convolución, su espectro es el
+producto del espectro de la secuencia de muestras, que es \emph{periódico} con periodo
+$1/d_f$, por la envolvente $d_f\sinc(d_fu)$. Toda la información que el diseñador controla
+(los valores $t_i$) está contenida en un solo periodo, $|u|\le1/(2d_f)$; las réplicas fuera de
+esa banda son copias atenuadas por la sinc y no pueden ajustarse de forma independiente.
+Ésta es la frecuencia de Nyquist del teorema de muestreo \parencite{shannon1949}.
+
+Por lo tanto, la dirección más inclinada hacia la que la red puede enviar luz \emph{de
+manera controlada} cumple $\sin\varphi_{\max}=\lambda u_{\text{Nyquist}}=\lambda/(2d_f)$, que es
+\eqref{eq:phimax}. Como muestra \cref{fig:sinc}, esa banda contiene el
+$\int_{-1/2}^{1/2}\sinc^2(x)\dd x\approx\SI{77.4}{\percent}$ de la energía radiada por una
+neurona en cada dirección (el \SI{59.9}{\percent} en dos dimensiones).
+
+\begin{calculo}[Semiángulo de difracción en el sistema del artículo]
+Con $d_f=\SI{4}{\micro m}$ y $\lambda=\SI{632.8}{nm}$:
+\[
+  \sin\varphi_{\max}=\frac{\num{632.8e-9}}{2\times\num{4e-6}}=\num{0.0791}
+  \quad\Rightarrow\quad\varphi_{\max}=\ang{4.54},
+  \qquad\tan\varphi_{\max}=\num{0.0793}.
+\]
+En la demostración en terahertz de \textcite{lin2018} ($\lambda=\SI{0.75}{mm}$,
+$d_f=\SI{0.4}{mm}$) el mismo cálculo da $\sin\varphi_{\max}=0.94$, es decir $\varphi_{\max}\approx\ang{70}$.
+Mantener ese ángulo en el visible exigiría neuronas de $\approx\SI{330}{nm}$, como señalan
+\textcite{chen2021}; de ahí la necesidad de compensar con la distancia entre capas.
+\end{calculo}

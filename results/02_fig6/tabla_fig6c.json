@@ -1,0 +1,47 @@
+[
+  {
+    "case": "1",
+    "d_f_lambda": 0.53,
+    "D_lambda": 15.0,
+    "D_min_lambda": 14.90647966489742,
+    "D_over_Dmin": 1.0062738042250716,
+    "acc_paper": 90.0,
+    "acc_ours": 89.8
+  },
+  {
+    "case": "2",
+    "d_f_lambda": 6.0,
+    "D_lambda": 5700.0,
+    "D_min_lambda": 5739.965156688671,
+    "D_over_Dmin": 0.9930373868834202,
+    "acc_paper": 91.0,
+    "acc_ours": 89.0
+  },
+  {
+    "case": "3",
+    "d_f_lambda": 6.0,
+    "D_lambda": 24000.0,
+    "D_min_lambda": 5739.965156688671,
+    "D_over_Dmin": 4.181210050035453,
+    "acc_paper": 91.2,
+    "acc_ours": 84.8
+  },
+  {
+    "case": "4",
+    "d_f_lambda": 12.0,
+    "D_lambda": 15.0,
+    "D_min_lambda": 23019.991311901053,
+    "D_over_Dmin": 0.0006516075439283586,
+    "acc_paper": 0.1,
+    "acc_ours": 14.399999999999999
+  },
+  {
+    "case": "3t",
+    "d_f_lambda": 6.0,
+    "D_lambda": 2400.0,
+    "D_min_lambda": 5739.965156688671,
+    "D_over_Dmin": 0.4181210050035454,
+    "acc_paper": null,
+    "acc_ours": 91.2
+  }
+]

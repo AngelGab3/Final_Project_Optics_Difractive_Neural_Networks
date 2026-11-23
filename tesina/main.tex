@@ -1,0 +1,33 @@
+% =====================================================================
+%  Tesina: Redes neuronales difractivas en el visible
+%  Compilar:  latexmk -pdf main.tex     (pdflatex + biber)
+%  En Overleaf: compilador pdfLaTeX; la bibliografía usa biber automáticamente.
+% =====================================================================
+\documentclass[letterpaper,fontsize=12pt,twoside=false,listof=totoc,
+               bibliography=totoc,headings=normal,parskip=false]{scrbook}
+
+\input{meta/preambulo}
+\input{meta/datos}
+
+\begin{document}
+
+\frontmatter
+\input{meta/portada}
+\input{meta/preliminares}
+
+\mainmatter
+\input{capitulos/01_introduccion}
+\input{capitulos/02_difraccion}
+\input{capitulos/03_modelo}
+\input{capitulos/04_conectividad}
+\input{capitulos/05_metodo_numerico}
+\input{capitulos/06_resultados}
+\input{capitulos/07_conclusiones}
+
+\printbibliography[title={Referencias}]
+
+\appendix
+\input{capitulos/A_rayleigh_sommerfeld}
+\input{capitulos/B_implementacion}
+
+\end{document}

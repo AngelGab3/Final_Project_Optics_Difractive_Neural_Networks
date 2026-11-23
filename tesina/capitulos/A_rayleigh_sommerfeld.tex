@@ -1,0 +1,93 @@
+% =====================================================================
+\chapter{Deducción de la integral de Rayleigh--Sommerfeld}\label{ap:rs}
+% =====================================================================
+
+Este apéndice deduce \eqref{eq:rs}--\eqref{eq:h-rs} siguiendo a
+\textcite[secs.~3.3--3.5]{goodman2005}.
+
+\section{Teorema integral de Helmholtz y Kirchhoff}
+
+Sean $U$ y $G$ dos funciones que satisfacen la ecuación de Helmholtz \eqref{eq:helmholtz}
+dentro de un volumen $V$ limitado por una superficie $S$. El teorema de Green afirma que
+\begin{equation}
+  \iiint_V\bigl(G\nabla^2U-U\nabla^2G\bigr)\dd V
+  =\oiint_S\Bigl(G\frac{\partial U}{\partial n}-U\frac{\partial G}{\partial n}\Bigr)\dd S,
+  \label{eq:green}
+\end{equation}
+con $\partial/\partial n$ la derivada en la dirección de la normal exterior. Como
+$\nabla^2U=-k^2U$ y $\nabla^2G=-k^2G$, el integrando de la izquierda se anula. Si se elige
+$G=e^{\jj kr_{01}}/r_{01}$, una onda esférica que sale del punto de observación $P_0$, hay que
+excluir de $V$ una esfera pequeña alrededor de $P_0$, donde $G$ es singular. Al hacer tender su
+radio a cero, esa esfera contribuye con $4\pi U(P_0)$, y se obtiene el \emph{teorema integral de
+Helmholtz y Kirchhoff}:
+\begin{equation}
+  U(P_0)=\frac{1}{4\pi}\oiint_S\Bigl(G\frac{\partial U}{\partial n}-U\frac{\partial G}{\partial n}\Bigr)\dd S .
+  \label{eq:hk}
+\end{equation}
+
+\section{Elección de la superficie y de la función de Green}
+
+Tomamos como $S$ el plano $z=0$ cerrado por una semiesfera de radio $R\to\infty$ en $z>0$. Si el
+campo satisface la condición de radiación de Sommerfeld,
+$\lim_{R\to\infty}R\,(\partial U/\partial n-\jj kU)=0$, la contribución de la semiesfera se anula
+y sólo queda el plano.
+
+Para no tener que conocer a la vez $U$ y $\partial U/\partial n$ en el plano, Sommerfeld propuso
+usar la función de Green
+\begin{equation}
+  G_-=\frac{e^{\jj kr_{01}}}{r_{01}}-\frac{e^{\jj k\tilde r_{01}}}{\tilde r_{01}},
+  \label{eq:green-imagen}
+\end{equation}
+donde $\tilde r_{01}$ es la distancia desde el punto imagen $\tilde P_0=(x_0,y_0,-z_0)$. En el
+plano $z=0$ ambas distancias son iguales, así que $G_-=0$ y \eqref{eq:hk} se reduce a
+\begin{equation}
+  U(P_0)=-\frac{1}{4\pi}\iint_{z=0}U\,\frac{\partial G_-}{\partial n}\dd S .
+  \label{eq:rs-paso}
+\end{equation}
+
+\section{Cálculo de la derivada normal}
+
+En el plano la normal exterior apunta hacia $-z$, de modo que $\partial/\partial n=-\partial/\partial z_1$.
+Para el primer término de \eqref{eq:green-imagen}, con
+$r_{01}^2=(x_1-x_0)^2+(y_1-y_0)^2+(z_1-z_0)^2$,
+\[
+  \frac{\partial r_{01}}{\partial z_1}\Big|_{z_1=0}=-\frac{z_0}{r},\qquad
+  \frac{\partial}{\partial r}\Bigl(\frac{e^{\jj kr}}{r}\Bigr)=\Bigl(\jj k-\frac1r\Bigr)\frac{e^{\jj kr}}{r},
+\]
+y por lo tanto $\partial G_1/\partial n=(\jj k-1/r)(e^{\jj kr}/r)(z_0/r)$. Para el término imagen,
+$\partial\tilde r_{01}/\partial z_1=+z_0/r$ y la derivada tiene el signo opuesto, pero aparece
+restando en $G_-$. Ambas contribuciones se suman:
+\begin{equation}
+  \frac{\partial G_-}{\partial n}=2\,\frac{z_0}{r}\Bigl(\jj k-\frac1r\Bigr)\frac{e^{\jj kr}}{r}.
+  \label{eq:dgdn}
+\end{equation}
+Sustituyendo en \eqref{eq:rs-paso}, con $z\equiv z_0$,
+\begin{equation}
+  U(x_0,y_0,z)=\frac{1}{2\pi}\iint U(x_1,y_1,0)\,\frac{z}{r}\Bigl(\frac1r-\jj k\Bigr)\frac{e^{\jj kr}}{r}\dd x_1\dd y_1,
+\end{equation}
+que es \eqref{eq:rs} con la respuesta al impulso \eqref{eq:h-rs}.
+
+\section{Ejemplo resuelto: campo en el eje de una apertura circular}\label{sec:circular}
+
+Este resultado sirve como referencia exacta en \cref{tab:validacion}. Una apertura
+circular de radio $a$ se ilumina con una onda plana unitaria. En el eje ($x_0=y_0=0$), con
+coordenadas polares $\rho$ en la apertura, $r^2=z^2+\rho^2$:
+\[
+  U(0,0,z)=\frac{1}{2\pi}\int_0^{2\pi}\!\!\int_0^a\frac{z}{r^2}\Bigl(\frac1r-\jj k\Bigr)e^{\jj kr}\,\rho\dd\rho\dd\phi
+  =z\int_0^a\Bigl(\frac1r-\jj k\Bigr)\frac{e^{\jj kr}}{r^2}\,\rho\dd\rho .
+\]
+Como $r\dd r=\rho\dd\rho$, el cambio de variable de $\rho$ a $r$ (de $z$ a $R=\sqrt{z^2+a^2}$) da
+\[
+  U(0,0,z)=z\int_z^R\Bigl(\frac{1}{r^2}-\frac{\jj k}{r}\Bigr)e^{\jj kr}\dd r .
+\]
+El integrando es la derivada de $-e^{\jj kr}/r$; en efecto,
+$\frac{\dd}{\dd r}\bigl(-e^{\jj kr}/r\bigr)=e^{\jj kr}/r^2-\jj k\,e^{\jj kr}/r$. Por lo tanto
+\begin{equation}
+  \boxed{\;U(0,0,z)=z\Bigl[-\frac{e^{\jj kr}}{r}\Bigr]_z^R=e^{\jj kz}-\frac{z}{R}\,e^{\jj kR}.\;}
+  \label{eq:circular}
+\end{equation}
+El primer término es la onda incidente y el segundo, una onda que parece salir del borde de la
+apertura. Su interferencia produce las oscilaciones de \cref{fig:val-circular}: la
+intensidad en el eje se anula cada vez que la diferencia de camino $R-z$ es un múltiplo entero
+de $\lambda$ (si $z\gg a$ y $z/R\approx1$), lo que equivale a que la apertura contenga un número
+par de zonas de Fresnel \parencite[sec.~10.3]{hecht2017}.

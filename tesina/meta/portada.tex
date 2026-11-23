@@ -1,0 +1,64 @@
+% =====================================================================
+%  Portada UDLAP. Inspirada en la plantilla original: líneas geométricas
+%  finas, bloque de título a la izquierda y datos abajo; aquí todo se dibuja
+%  con TikZ (sin imagen de fondo) en el naranja institucional.
+% =====================================================================
+\begin{titlepage}
+\pdfbookmark[0]{Portada}{portada}
+\sffamily
+\begin{tikzpicture}[remember picture,overlay]
+  \coordinate (NW) at (current page.north west);
+  \coordinate (SE) at (current page.south east);
+  % --- polígono principal (equivalente al marco de la plantilla)
+  \draw[udlap!55,line width=0.5pt]
+    ($(NW)+(1.2,-3.6)$) -- ($(NW)+(18.6,-2.6)$) -- ($(NW)+(17.2,-23.6)$)
+    -- ($(NW)+(1.2,-22.4)$) -- cycle;
+  % --- facetas de la derecha
+  \draw[udlap!40,line width=0.4pt]
+    ($(NW)+(18.6,-2.6)$) -- ($(NW)+(21.6,-0.6)$)
+    ($(NW)+(18.6,-2.6)$) -- ($(NW)+(21.6,-7.2)$)
+    ($(NW)+(18.3,-7.1)$) -- ($(NW)+(21.6,-8.4)$)
+    ($(NW)+(18.3,-7.1)$) -- ($(NW)+(21.6,-12.6)$)
+    ($(NW)+(17.9,-13.2)$) -- ($(NW)+(21.6,-12.6)$)
+    ($(NW)+(17.6,-16.8)$) -- ($(NW)+(21.6,-18.2)$)
+    ($(NW)+(17.2,-23.6)$) -- ($(NW)+(21.6,-18.2)$)
+    ($(NW)+(17.2,-23.6)$) -- ($(NW)+(21.6,-27.2)$);
+  % --- franja inferior
+  \fill[udlap] ($(current page.south west)+(0,0)$) rectangle ($(SE)+(0,0.55)$);
+  % --- ondas de difracción sutiles (motivo del tema)
+  \foreach \r in {1,...,9}{
+    \draw[udlap!18,line width=0.6pt] ($(NW)+(1.2,-22.4)$) ++(0:\r*0.55) arc (0:62:\r*0.55);
+  }
+  % --- logo
+  \node[anchor=north west,inner sep=0pt] at ($(NW)+(1.6,-0.7)$)
+    {\includegraphics[width=2.6cm]{logo_udlap.png}};
+  \node[anchor=west,text width=9cm,align=left,inner sep=0pt] at ($(NW)+(4.6,-2.0)$)
+    {\fontsize{13}{15}\selectfont\bfseries\color{udlaposcuro}Universidad de las Américas Puebla\\[2pt]
+     \fontsize{10}{12}\selectfont\mdseries\color{gris}Escuela de \Escuela\\
+     Departamento de \Departamento};
+  % --- tipo de trabajo, título y subtítulo
+  \node[anchor=north west,inner sep=0pt,text width=14.2cm,align=left]
+    at ($(NW)+(2.6,-6.4)$) {%
+      {\fontsize{20}{26}\selectfont\color{udlap} Tesina\par}
+      \vspace{30pt}
+      {\fontsize{22}{27}\selectfont\bfseries \Titulo\par}
+      \vspace{12pt}
+      {\color{udlap}\rule{3.2cm}{2pt}\par}
+      \vspace{12pt}
+      {\fontsize{13}{17}\selectfont\mdseries\color{gris} \Subtitulo\par}
+  };
+  % --- autor, curso, profesor
+  \node[anchor=north west,inner sep=0pt,text width=14cm,align=left]
+    at ($(NW)+(2.6,-17.0)$) {%
+      \fontsize{12}{16}\selectfont
+      Presentan: \textbf{\Autor}\par
+      \vspace{26pt}
+      \fontsize{10.5}{14}\selectfont
+      \begin{tabular}{@{}p{3.3cm}@{}p{10cm}@{}}
+        Curso:    & \Curso \\[6pt]
+        Profesor: & \Profesor \\[6pt]
+        Lugar y fecha: & \Lugar, \Fecha
+      \end{tabular}
+  };
+\end{tikzpicture}
+\end{titlepage}

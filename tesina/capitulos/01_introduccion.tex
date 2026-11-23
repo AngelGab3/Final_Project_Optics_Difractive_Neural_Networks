@@ -1,0 +1,96 @@
+% =====================================================================
+\chapter{Introducción}\label{cap:intro}
+% =====================================================================
+
+\section{Motivación y antecedentes}
+
+En el curso de Óptica, la difracción suele presentarse primero a través de sus límites
+clásicos —la difracción de campo lejano o de Fraunhofer, donde la propagación libre realiza una
+transformada de Fourier espacial exacta, y la difracción de campo cercano o de Fresnel,
+gobernada por el principio de Huygens--Fresnel— junto con las herramientas de la óptica de
+Fourier y el filtrado espacial en el plano de frecuencias \parencite{goodman2005}. Sin embargo,
+esos mismos fenómenos ondulatorios convierten al espacio libre y a los elementos difractivos en
+procesadores analógicos masivamente paralelos: al propagarse entre planos modulados, un frente
+de onda coherente ejecuta combinaciones lineales complejas a la velocidad de la luz y sin
+consumo energético adicional al de la fuente de iluminación.
+
+Mientras que el aprendizaje profundo convencional se ejecuta en procesadores electrónicos cuyo
+costo energético y latencia crecen rápidamente con la dimensión de las matrices de pesos,
+\textcite{lin2018} propusieron aprovechar la propagación difractiva en una \emph{red neuronal
+difractiva profunda} (D\textsuperscript{2}NN): una pila de placas cuya variación local de
+espesor impone retardos de fase independientes a la onda incidente. Entrenada numéricamente
+en computadora mediante retropropagación y fabricada luego como objeto físico pasivo, la red
+clasifica dígitos escritos a mano únicamente mediante interferencia y difracción.
+
+Esa primera demostración operó en la banda de los terahertz ($\lambda\approx\SI{0.75}{mm}$),
+donde neuronas de cientos de micrómetros se imprimen en 3D con facilidad. Estudios posteriores
+profundizaron en la capacidad de representación de estas arquitecturas, su sensibilidad al
+número de capas y las ventajas de integrarlas con etapas electrónicas de detección
+\parencite{mengu2020}, confirmando que la profundidad óptica aporta grados de libertad que una
+sola máscara no alcanza. No obstante, trasladar el esquema al espectro visible ofrece ventajas
+decisivas: reduce el tamaño transversal del sistema en tres órdenes de magnitud y habilita
+fuentes láser compactas y detectores CMOS convencionales. A cambio, exige fabricar neuronas de
+escala micrométrica por fotolitografía y plantea una restricción física fundamental sobre el
+espaciamiento entre planos: al disminuir $d_f$ o acortar $\lambda$, el cono de difracción de
+cada píxel cambia de abertura y condiciona si las capas logran mezclarse entre sí.
+\textcite{chen2021} abordan precisamente este régimen en el visible con un láser de He--Ne
+($\lambda=\SI{632.8}{nm}$), proponen un criterio cuantitativo de conectividad entre capas y
+demuestran experimentalmente un clasificador pasivo de cinco capas en sílice fundida.
+
+\section{Planteamiento del problema}
+
+El artículo de \textcite{chen2021} presenta su modelo físico (sus ecuaciones~1 a~5) y su
+criterio de conectividad (ecuaciones~6 a~9) sin deducirlos, y valida el criterio con sólo
+cuatro configuraciones numéricas. Tampoco describe cómo se discretiza la propagación ni
+cómo se calcula el gradiente durante el entrenamiento. Este trabajo se propone llenar esos
+huecos desde la teoría de la difracción escalar y comprobar los resultados mediante una
+reproducción numérica independiente.
+
+\section{Objetivos}
+
+\paragraph{Objetivo general.} Deducir, justificar y reproducir numéricamente el modelo de
+una D\textsuperscript{2}NN de solo fase en el visible propuesto por \textcite{chen2021}.
+
+\paragraph{Objetivos específicos.}
+\begin{enumerate}
+  \item Deducir la función de transferencia del espacio libre (espectro angular) a partir de
+        la ecuación de Helmholtz, y relacionarla con la integral de Rayleigh--Sommerfeld.
+  \item Justificar el semiángulo de difracción $\varphi_{\max}=\arcsin[\lambda/(2d_f)]$ y
+        deducir el criterio de conectividad entre capas.
+  \item Obtener explícitamente el gradiente de la función de pérdida respecto a las fases.
+  \item Analizar el muestreo numérico de la propagación y validar el propagador contra
+        soluciones analíticas.
+  \item Reproducir la Fig.~6 del artículo y explorar el criterio de conectividad con un
+        barrido de la distancia entre capas.
+  \item Estimar las tolerancias de fabricación del sistema.
+\end{enumerate}
+
+\section{Contribuciones}\label{sec:contribuciones}
+
+Además de la reproducción, este trabajo aporta los siguientes elementos que no aparecen en el
+artículo original:
+\begin{enumerate}
+  \item La deducción completa de las ecuaciones del modelo, desde la ecuación de Helmholtz
+        hasta el criterio de conectividad (\cref{cap:difraccion,cap:modelo,cap:conectividad}).
+  \item La justificación del factor~2 en $\varphi_{\max}=\arcsin[\lambda/(2d_f)]$ mediante el
+        teorema de muestreo (\cref{sec:neurona}).
+  \item El cálculo del gradiente con cálculo de Wirtinger y su interpretación como una onda
+        de error que viaja en sentido inverso (\cref{sec:gradiente}).
+  \item La demostración de que el criterio de conectividad coincide con la condición de
+        muestreo del espectro angular de banda limitada (\cref{prop:identidad}), y de que su
+        variable relevante es el número de Fresnel de una neurona (\cref{sec:fresnel-neurona}).
+  \item Un barrido de la distancia entre capas que muestra que el criterio es unas diez veces
+        más estricto de lo necesario (\cref{sec:barrido}).
+  \item La identificación de dos inconsistencias en la Fig.~6 del artículo
+        (\cref{sec:inconsistencias}) y un análisis de tolerancias de fabricación
+        (\cref{sec:fabricacion}).
+\end{enumerate}
+
+\section{Organización del documento}
+
+El \cref{cap:difraccion} desarrolla la teoría de la difracción escalar necesaria. El
+\cref{cap:modelo} construye el modelo de la red y deduce su gradiente. El
+\cref{cap:conectividad} analiza la conectividad entre capas. El \cref{cap:numerico} describe
+la discretización y valida el propagador. El \cref{cap:resultados} presenta los resultados y
+el \cref{cap:conclusiones}, las conclusiones. Los apéndices contienen la deducción de la
+integral de Rayleigh--Sommerfeld y detalles de implementación.

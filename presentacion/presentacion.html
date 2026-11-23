@@ -1,0 +1,1384 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Redes Neuronales Difractivas en el Visible · Proyecto Final de Óptica</title>
+<link rel="stylesheet" href="vendor/katex/katex.min.css">
+<script defer src="vendor/katex/katex.min.js"></script>
+<script defer src="vendor/katex/contrib/auto-render.min.js"></script>
+<style>
+  :root{
+    --black:#000; --ink:#1d1d1f; --gray:#86868b; --gray2:#515154; --line:#d2d2d7;
+    --paper:#fff; --mist:#f5f5f7;
+    --blue:#2997ff; --teal:#2bb3d9; --green:#30d158; --green-dark:#1a7f37;
+    --amber:#ff9f0a; --red:#ff453a;
+    --grad: linear-gradient(100deg,#2997ff 0%,#30d158 100%);
+    --grad-warm: linear-gradient(100deg,#ff9f0a 0%,#ff453a 100%);
+    --grad-blue: linear-gradient(100deg,#2997ff 0%,#2bb3d9 100%);
+    --grad-green: linear-gradient(100deg,#2bb3d9 0%,#30d158 100%);
+    --accent:#ff9f0a; --accent2:#ff453a; --accent-grad:var(--grad-warm); --accent-soft:rgba(255,159,10,.15);
+  }
+  .act1{--accent:#ff9f0a;--accent2:#ff453a;--accent-grad:var(--grad-warm);--accent-soft:rgba(255,159,10,.16)}
+  .act2{--accent:#2997ff;--accent2:#2bb3d9;--accent-grad:var(--grad-blue);--accent-soft:rgba(41,151,255,.15)}
+  .act3{--accent:#30d158;--accent2:#1a7f37;--accent-grad:var(--grad-green);--accent-soft:rgba(48,209,88,.15)}
+
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{width:100%;height:100%;background:#000;overflow:hidden;
+    font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","Helvetica Neue","Segoe UI",Inter,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;color:var(--ink)}
+  .stage{width:100vw;height:100vh;display:flex;align-items:center;justify-content:center}
+  .deck{width:1280px;height:720px;position:relative;transform-origin:center;flex-shrink:0;overflow:hidden}
+  .slide{position:absolute;inset:0;padding:52px 78px 46px;display:flex;flex-direction:column;
+    opacity:0;visibility:hidden;transition:opacity .5s ease,visibility .5s}
+  .slide.active{opacity:1;visibility:visible}
+  .dark{background:#000;color:#f5f5f7}
+  .light{background:#fff;color:var(--ink)}
+  .mist{background:var(--mist);color:var(--ink)}
+
+  /* entrada escalonada */
+  .r{opacity:0;transform:translateY(18px);transition:opacity .7s cubic-bezier(.2,.7,.2,1),transform .7s cubic-bezier(.2,.7,.2,1)}
+  .active .r{opacity:1;transform:none}
+  .active .d1{transition-delay:.08s}.active .d2{transition-delay:.16s}.active .d3{transition-delay:.24s}
+  .active .d4{transition-delay:.32s}.active .d5{transition-delay:.40s}
+
+  /* tipografía */
+  .eyebrow{display:inline-flex;align-items:center;gap:9px;font-size:15px;font-weight:600;
+    letter-spacing:-.1px;color:var(--gray);margin-bottom:8px}
+  .dark .eyebrow{color:#a1a1a6}
+  .act1 .eyebrow::before,.act2 .eyebrow::before,.act3 .eyebrow::before{
+    content:'';width:8px;height:8px;border-radius:50%;background:var(--accent);flex-shrink:0;
+    box-shadow:0 0 10px var(--accent-soft)}
+  h1{font-size:88px;font-weight:700;letter-spacing:-3.5px;line-height:1.02}
+  h2{font-size:48px;font-weight:700;letter-spacing:-1.9px;line-height:1.06}
+  h2.xl{font-size:66px;letter-spacing:-2.6px}
+  .lead{font-size:21px;font-weight:500;line-height:1.38;letter-spacing:-.25px;color:var(--gray2);max-width:740px}
+  .dark .lead{color:#a1a1a6}
+  .grad{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .grad-warm{background:var(--grad-warm);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .grad-act{background:var(--accent-grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .muted{color:var(--gray)}
+  .center{align-items:center;justify-content:center;text-align:center}
+  .center .lead{margin-left:auto;margin-right:auto}
+  .fine{font-size:13.5px;color:var(--gray2);line-height:1.42}
+  .dark .fine{color:#a1a1a6}
+
+  /* 1 portada */
+  .cover .emblem{width:112px;height:112px;border-radius:28px;margin-bottom:26px;
+    background:radial-gradient(circle at 30% 30%,#2a1210,#0c0c0e);
+    border:1px solid rgba(255,159,10,.3);
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:0 0 80px rgba(255,69,58,.32),0 0 140px rgba(255,159,10,.16)}
+  .cover h1{margin-bottom:14px}
+  .cover .tag{font-size:29px;font-weight:600;letter-spacing:-.7px;color:#d1d1d6}
+  .cover .team{position:absolute;bottom:40px;left:0;right:0;text-align:center;font-size:15px;color:#86868b;line-height:1.65}
+  .cover .team b{color:#f5f5f7;font-weight:600}
+
+  /* 2 gancho */
+  .duo{display:grid;grid-template-columns:1fr 1fr;gap:72px;margin-top:42px;width:100%;max-width:960px}
+  .bignum{font-size:128px;font-weight:700;letter-spacing:-6px;line-height:.95}
+  .bignum small{font-size:.38em;letter-spacing:-1.5px;margin-left:4px}
+  .numlbl{font-size:20px;color:#a1a1a6;margin-top:14px;font-weight:500;line-height:1.4}
+  .numlbl b{color:#f5f5f7;font-weight:600}
+
+  /* 3 agenda */
+  .agenda3{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:28px;flex:1;align-items:stretch}
+  .agcard{background:#fff;border-radius:24px;padding:28px 26px;border:1px solid #e5e5ea;
+    border-top:5px solid var(--accent);display:flex;flex-direction:column}
+  .agnum{font-size:52px;font-weight:800;letter-spacing:-2.5px;line-height:1;margin-bottom:12px}
+  .agcard h3{font-size:23px;font-weight:700;letter-spacing:-.5px;margin-bottom:14px;color:var(--ink)}
+  .aglist{list-style:none;display:flex;flex-direction:column;gap:10px;margin-top:4px}
+  .aglist li{font-size:16px;color:var(--gray2);line-height:1.38;padding-left:16px;position:relative}
+  .aglist li::before{content:'';position:absolute;left:0;top:7px;width:6px;height:6px;border-radius:50%;background:var(--accent)}
+  .agtime{margin-top:auto;padding-top:16px;font-size:13px;font-weight:700;color:var(--gray);letter-spacing:.3px;text-transform:uppercase}
+
+  /* separadores de bloque */
+  .divider{justify-content:center;align-items:flex-start;padding:56px 96px}
+  .div-num{font-size:176px;font-weight:800;letter-spacing:-8px;line-height:.88;margin-bottom:14px}
+  .div-rule{width:96px;height:4px;border-radius:4px;background:var(--accent-grad);margin:18px 0 22px}
+  .div-sub{font-size:24px;color:#a1a1a6;max-width:740px;line-height:1.38;font-weight:500}
+
+  /* split y fórmulas */
+  .split{display:grid;grid-template-columns:1fr 1fr;gap:38px;align-items:center;flex:1;margin-top:14px}
+  .split.w45{grid-template-columns:450px 1fr}
+  .split.w55{grid-template-columns:1.15fr .85fr}
+  .split.w60{grid-template-columns:1.28fr .72fr}
+  .formula{display:flex;align-items:center;justify-content:flex-start;margin:14px 0 12px;color:var(--ink)}
+  .dark .formula{color:#f5f5f7}
+  .formula .katex-display{margin:0}
+  .katex{font-size:1.02em}
+  h3 .katex,.t .katex{font-size:.98em}
+
+  /* tarjetas */
+  .card{background:#fff;border-radius:22px;padding:22px 24px;box-shadow:0 8px 24px rgba(0,0,0,.04)}
+  .light .card{background:var(--mist);box-shadow:none}
+  .dark .card{background:#151517;border:1px solid #2c2c2e;box-shadow:none}
+  .card h3{font-size:21px;font-weight:700;letter-spacing:-.5px;margin-bottom:7px}
+  .card p{font-size:16px;line-height:1.42;color:var(--gray2)}
+  .card.sm{border-radius:18px;padding:14px 18px}
+  .card.sm h3{font-size:18.5px;margin-bottom:4px}
+  .card.sm p{font-size:14.8px;line-height:1.38}
+  .dark .card p{color:#a1a1a6}
+  .card b{color:var(--ink);font-weight:600}
+  .dark .card b{color:#f5f5f7}
+  .stack{display:flex;flex-direction:column;gap:14px}
+
+  .specs{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:16px}
+  .specs.c4{grid-template-columns:repeat(4,1fr);gap:14px}
+  .spec{background:#fff;border-radius:20px;padding:18px 20px;border:1px solid #ececef}
+  .light .spec{background:var(--mist);border-color:transparent}
+  .dark .spec{background:#151517;border:1px solid #2c2c2e}
+  .spec .v{font-size:34px;font-weight:700;letter-spacing:-1.4px;line-height:1.05}
+  .spec .v small{font-size:.52em;letter-spacing:-.4px;margin-left:3px}
+  .spec .t{font-size:17px;font-weight:700;letter-spacing:-.4px;margin-bottom:5px}
+  .spec .l{font-size:14.8px;color:var(--gray2);margin-top:6px;line-height:1.36}
+  .dark .spec .l{color:#a1a1a6}
+  .spec .l b{color:var(--ink)}
+  .dark .spec .l b{color:#f5f5f7}
+
+  .pill{display:inline-block;font-size:12px;font-weight:700;padding:4px 11px;border-radius:999px;margin-bottom:8px;letter-spacing:.2px;text-transform:uppercase}
+  .pill.bad{background:#ffe5e3;color:#d70015}
+  .pill.ok{background:#dcf7e3;color:#1a7f37}
+  .pill.info{background:#e1f0ff;color:#0066cc}
+  .pill.warn{background:#fff1d6;color:#b25900}
+  .pill.act{background:var(--accent-soft);color:var(--accent2)}
+  .dark .pill.bad{background:rgba(255,69,58,.18);color:#ff6961}
+  .dark .pill.ok{background:rgba(48,209,88,.18);color:#4cd964}
+  .dark .pill.info{background:rgba(41,151,255,.18);color:#5ac8fa}
+  .dark .pill.warn{background:rgba(255,159,10,.18);color:#ff9f0a}
+  .dark .pill.act{background:var(--accent-soft);color:var(--accent)}
+
+  /* marcos de imágenes unificados */
+  .figbox{background:#fff;border-radius:18px;padding:14px;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;border:1px solid #e5e5ea}
+  .dark .figbox{border:none;box-shadow:0 10px 30px rgba(0,0,0,.35)}
+  .figbox img{max-width:100%;height:auto;object-fit:contain;display:block;border-radius:8px}
+  .figcap{font-size:13px;color:var(--gray2);margin-top:8px;text-align:center;line-height:1.32}
+  .figcap::before{content:'● ';color:var(--accent);font-size:9px;vertical-align:middle}
+
+  /* tablas limpias */
+  table.clean{width:100%;border-collapse:collapse;font-size:16px;font-variant-numeric:tabular-nums}
+  table.clean th{text-align:left;font-weight:600;color:var(--gray);padding:9px 8px;border-bottom:1.5px solid var(--line);font-size:13.5px}
+  table.clean td{padding:9px 8px;border-bottom:1px solid #ececef;color:var(--ink)}
+  table.clean tr:last-child td{border-bottom:none}
+
+  /* flujo 4 pasos */
+  .flow4{display:grid;grid-template-columns:1fr 22px 1fr 22px 1fr 22px 1fr;gap:8px;align-items:stretch;margin-top:30px}
+  .fbox{background:#151517;border:1px solid #2c2c2e;border-radius:20px;padding:20px 18px;display:flex;flex-direction:column}
+  .fbox .n{font-size:12.5px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;margin-bottom:9px}
+  .fbox b{font-size:19.5px;font-weight:700;letter-spacing:-.4px;color:#f5f5f7;margin-bottom:7px;line-height:1.2}
+  .fbox span{font-size:15px;color:#a1a1a6;line-height:1.4}
+  .farr{display:flex;align-items:center;justify-content:center;font-size:22px;color:#48484a}
+
+  /* barra de verificación / llamada */
+  .strip{margin-top:auto;background:#151517;border:1px solid #2c2c2e;border-radius:16px;padding:14px 22px;
+    display:flex;align-items:center;justify-content:space-between;gap:22px}
+  .light .strip,.mist .strip{background:#fff;border-color:#e5e5ea}
+  .light .strip{background:var(--mist)}
+  .strip .left{font-size:15.5px;color:#d1d1d6;line-height:1.38}
+  .light .strip .left,.mist .strip .left{color:var(--gray2)}
+  .strip .left b{color:#fff}
+  .light .strip .left b,.mist .strip .left b{color:var(--ink)}
+  .strip .badge{font-size:23px;font-weight:700;letter-spacing:-.8px;white-space:nowrap}
+
+  /* 4 columnas cierre */
+  .quad{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-top:32px;width:100%;text-align:left}
+  .q{background:#151517;border:1px solid #2c2c2e;border-top:3px solid;border-radius:18px;padding:18px 20px}
+  .q .t{font-size:18.5px;font-weight:700;letter-spacing:-.4px;margin-bottom:8px;color:#f5f5f7}
+  .q p{font-size:14.5px;line-height:1.42;color:#a1a1a6}
+  .q p b{color:#f5f5f7}
+
+  /* numeración generada en JS */
+  .slide-num{position:absolute;bottom:20px;right:34px;font-size:12px;color:#86868b;font-variant-numeric:tabular-nums}
+
+  /* barra de progreso en 3 actos */
+  .progress3{position:fixed;top:0;left:0;right:0;height:4px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:3px;
+    background:rgba(128,128,128,.16);z-index:25}
+  .pseg{height:100%;background:rgba(128,128,128,.18);overflow:hidden}
+  .pfill{height:100%;width:0%;transition:width .35s ease}
+  .pfill.a1{background:var(--grad-warm)}
+  .pfill.a2{background:var(--grad-blue)}
+  .pfill.a3{background:var(--grad-green)}
+
+  /* chip de bloque arriba a la izquierda */
+  .crumb{position:fixed;top:14px;left:22px;z-index:22;display:inline-flex;align-items:center;gap:8px;
+    padding:6px 13px;border-radius:999px;font-size:12.5px;font-weight:600;letter-spacing:-.1px;
+    background:rgba(28,28,30,.72);color:#f5f5f7;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+    border:1px solid rgba(255,255,255,.12);opacity:0;transform:translateY(-6px);transition:opacity .25s,transform .25s;pointer-events:none}
+  .crumb.on{opacity:1;transform:none}
+  .crumb i{width:8px;height:8px;border-radius:50%;display:inline-block}
+
+  /* HUD y notas */
+  .hud{position:fixed;bottom:14px;left:50%;transform:translateX(-50%);display:flex;gap:4px;align-items:center;
+    background:rgba(40,40,42,.80);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+    padding:6px;border-radius:999px;opacity:0;transition:opacity .3s;z-index:20}
+  body:hover .hud,.hud.show{opacity:1}
+  .hud button{background:none;border:0;color:#f5f5f7;font:500 13px/1 inherit;font-family:inherit;padding:8px 12px;border-radius:999px;cursor:pointer}
+  .hud button:hover{background:rgba(255,255,255,.14)}
+  .hud span{color:#a1a1a6;font-size:13px;min-width:54px;text-align:center;font-variant-numeric:tabular-nums}
+  .notes{position:fixed;left:0;right:0;bottom:0;max-height:36vh;overflow:auto;background:rgba(18,18,20,.96);backdrop-filter:blur(20px);
+    color:#f5f5f7;padding:20px 36px 68px;font-size:16px;line-height:1.52;transform:translateY(100%);transition:transform .32s;z-index:15}
+  .notes.on{transform:none}
+  .notes .nt{font-size:12px;font-weight:700;color:#ff9f0a;letter-spacing:.6px;text-transform:uppercase;margin-bottom:6px}
+
+  @media print{
+    @page{size:1280px 720px;margin:0}
+    html,body{overflow:visible;height:auto;background:#fff}
+    .stage{display:block;width:auto;height:auto}
+    .deck{transform:none!important;width:1280px;height:auto;overflow:visible}
+    .slide{position:relative;opacity:1!important;visibility:visible!important;width:1280px;height:720px;
+      page-break-after:always;break-after:page;-webkit-print-color-adjust:exact;print-color-adjust:exact;transition:none}
+    .r{opacity:1!important;transform:none!important}
+    .hud,.notes,.progress3,.crumb{display:none!important}
+    .grad,.grad-warm,.grad-act{background:none!important;-webkit-background-clip:border-box!important;background-clip:border-box!important}
+    .grad{color:#2997ff!important}
+    .grad-warm{color:#ff6b1a!important}
+    .act1 .grad-act{color:#ff6b1a!important}
+    .act2 .grad-act{color:#2997ff!important}
+    .act3 .grad-act{color:#1b9e4b!important}
+    .dark.act3 .grad-act{color:#30d158!important}
+  }
+
+  /* Componentes pedagógicos de apoyo para Actos II y III */
+  .eq-card{background:#fff;border:1px solid #e5e5ea;border-left:4px solid var(--accent);
+    border-radius:18px;padding:14px 20px;box-shadow:0 6px 20px rgba(0,0,0,.04)}
+  .dark .eq-card{background:#151517;border-color:#2c2c2e;border-left-color:var(--accent);box-shadow:none}
+  .eq-card .eq-title{font-size:15.5px;font-weight:700;letter-spacing:-.2px;margin-bottom:5px;color:var(--ink)}
+  .dark .eq-card .eq-title{color:#f5f5f7}
+  .eq-card .katex-display{margin:6px 0}
+  .eq-card .katex{font-size:1.12em}
+
+  .eq-steps{display:flex;flex-direction:column;gap:10px}
+  .eq-step{display:grid;grid-template-columns:30px 1fr;gap:12px;align-items:start;
+    background:#fff;border:1px solid #e5e5ea;border-radius:16px;padding:11px 16px}
+  .light .eq-step{background:var(--mist);border-color:transparent}
+  .dark .eq-step{background:#151517;border-color:#2c2c2e}
+  .step-num{width:28px;height:28px;border-radius:50%;background:var(--accent);color:#fff;
+    font-size:14px;font-weight:800;display:flex;align-items:center;justify-content:center;margin-top:1px}
+  .step-body h4{font-size:16.5px;font-weight:700;letter-spacing:-.2px;margin-bottom:3px;color:var(--ink)}
+  .dark .step-body h4{color:#f5f5f7}
+  .step-body p{font-size:15.5px;line-height:1.38;color:var(--gray2)}
+  .dark .step-body p{color:#a1a1a6}
+  .step-body .katex-display{margin:6px 0 2px;text-align:left}
+
+  .kv-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:12px}
+  .kv{background:var(--mist);border-radius:16px;padding:13px 16px;border:1px solid #ececef}
+  .mist .kv{background:#fff}
+  .dark .kv{background:#151517;border-color:#2c2c2e}
+  .kv .sym{font-size:18px;font-weight:700;color:var(--accent2);margin-bottom:4px}
+  .dark .kv .sym{color:var(--accent)}
+  .kv p{font-size:15.5px;line-height:1.38;color:var(--gray2)}
+  .dark .kv p{color:#a1a1a6}
+  .kv p b{color:var(--ink)}
+  .dark .kv p b{color:#f5f5f7}
+
+  .hero-fig{background:#fff;border-radius:20px;padding:14px 18px;border:1px solid #e5e5ea;
+    display:flex;flex-direction:column;align-items:center;justify-content:center}
+  .dark .hero-fig{border:none;box-shadow:0 12px 32px rgba(0,0,0,.4)}
+  .hero-fig img{max-width:100%;height:auto;object-fit:contain;display:block;border-radius:8px}
+  .hero-fig .figcap{font-size:14.5px;margin-top:9px}
+
+  .kpi-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+  .kpi{background:var(--mist);border-radius:18px;padding:14px 16px;border:1px solid #e5e5ea}
+  .kpi .val{font-size:34px;font-weight:800;letter-spacing:-1.4px;line-height:1.05}
+  .kpi .lbl{font-size:14.5px;color:var(--gray2);margin-top:4px;line-height:1.3}
+</style>
+</head>
+<body>
+<div class="progress3" id="prog3">
+  <div class="pseg"><div class="pfill a1" id="pf1"></div></div>
+  <div class="pseg"><div class="pfill a2" id="pf2"></div></div>
+  <div class="pseg"><div class="pfill a3" id="pf3"></div></div>
+</div>
+<div class="crumb" id="crumb"><i id="crumbDot"></i><span id="crumbTxt"></span></div>
+
+<div class="stage"><div class="deck" id="deck">
+
+<!-- 1 · PORTADA (0:20) -->
+<section class="slide dark cover center" data-notes="0:20 · [Gabriel Velázquez · Introducción] 👉 Señala el título. «Buenos días, doctor Maia Pimienta y compañeros; somos Gabriel Velázquez y Alonso Hernández. Hoy veremos cómo la difracción coherente permite clasificar imágenes usando solo vidrio y luz, y cómo dedujimos todas las ecuaciones y simulaciones detrás de Chen et al. (2021).» → Partamos de la pregunta central…">
+  <h1 class="r d1">Redes <span class="grad-warm">Difractivas</span></h1>
+  <p class="tag r d2">Clasificar imágenes usando solo luz y vidrio.</p>
+  <p class="lead r d3" style="margin-top:14px;font-size:19px">Fundamentos de difracción escalar, criterio de conectividad y reproducción numérica de Chen et al. (<em>Engineering</em>, 2021)</p>
+  <div class="team r d4">
+    <b>Universidad de las Américas Puebla</b> · Proyecto Final de Óptica · Aplicaciones de la Difracción<br>
+    Presentan: <b>Alonso Hernández</b> y <b>Gabriel Velázquez</b> · Profesor: <b>Dr. Wanderson Maia Pimienta</b> · 2026
+  </div>
+</section>
+
+<!-- 2 · GANCHO (0:35) -->
+<section class="slide dark center" data-notes="0:35 · [Gabriel Velázquez · Introducción] 👉 Señala 632.8 nm y luego 0 W. «Reconocer dígitos normalmente exige GPU y gigavatios. Aquí un láser rojo He–Ne de 632.8 nm cruza cinco placas pasivas de vidrio en menos de un nanosegundo: las propias ondas calculan por interferencia consumiendo cero watts al clasificar.» → Así dividimos la plática…">
+  <div class="eyebrow r">¿Y si la luz hiciera el cálculo?</div>
+  <h2 class="xl r d1">Sin transistores.<br><span class="grad-warm">Solo difracción.</span></h2>
+  <div class="duo">
+    <div class="r d2">
+      <div class="bignum grad-warm">632.8<small>nm</small></div>
+      <div class="numlbl"><b>Láser rojo He–Ne.</b> Atraviesa cinco láminas pasivas de vidrio en un nanosegundo.</div>
+    </div>
+    <div class="r d3">
+      <div class="bignum grad">0<small>W</small></div>
+      <div class="numlbl"><b>Consumo electrónico al clasificar.</b> Sin chips ni código en ejecución: solo interferencia.</div>
+    </div>
+  </div>
+</section>
+
+<!-- 3 · AGENDA (0:15) -->
+<section class="slide mist" data-notes="0:15 · [Gabriel Velázquez → Alonso Hernández · Relevo 1] 👉 Señala las 3 columnas. «Dividimos la exposición en tres actos: primero el arreglo físico y los modelos matemáticos de difracción, luego el puente hacia Deep Learning y finalmente los resultados y límites reales en GPU. Para ver cómo funciona por dentro este procesador óptico, Alonso Hernández nos lleva al laboratorio y a las ecuaciones.»">
+  <div class="eyebrow r">Estructura de la exposición</div>
+  <h2 class="r d1">Tres actos: del banco óptico <span class="grad-warm">a la teoría y los resultados.</span></h2>
+
+  <div class="agenda3 r d2">
+    <div class="agcard act1">
+      <div class="agnum grad-act">01</div>
+      <h3>La física del arreglo</h3>
+      <ul class="aglist">
+        <li>Banco óptico visible y fabricación en sala limpia</li>
+        <li>Rayleigh–Sommerfeld, fase \(\Phi\) y reflexión de Fresnel</li>
+        <li>Espectro angular \(H(u,v;z)\) y falla de Fresnel/Fraunhofer</li>
+        <li>Límite de Nyquist (factor 2), conectividad \(D_{\min}\) y \(N_{F,n}\)</li>
+      </ul>
+      <div class="agtime">Bloque I · Del aparato a la ecuación</div>
+    </div>
+    <div class="agcard act2">
+      <div class="agnum grad-act">02</div>
+      <h3>Del perceptrón a la óptica</h3>
+      <ul class="aglist">
+        <li>Del perceptrón al MLP clásico</li>
+        <li>Equivalencia física: \(\mathbf{W}\mathbf{a} \equiv \text{difracción}\)</li>
+        <li>Validación del simulador y \(D_{\min} = z_c\)</li>
+        <li>Gradiente holográfico (Wirtinger)</li>
+      </ul>
+      <div class="agtime">Bloque II · Modelo y entrenamiento</div>
+    </div>
+    <div class="agcard act3">
+      <div class="agnum grad-act">03</div>
+      <h3>Resultados</h3>
+      <ul class="aglist">
+        <li>Reproducción Fig. 6 e inconsistencias</li>
+        <li>Leyes de escala: \(N_{F,n}\) y \(1/(L+1)\)</li>
+        <li>Sistema \(1000\times 1000\) en GPU (90.63 %)</li>
+        <li>Tolerancias de fabricación (84 %)</li>
+      </ul>
+      <div class="agtime">Bloque III · Experimentos numéricos</div>
+    </div>
+  </div>
+</section>
+
+<!-- 4 · SEPARADOR BLOQUE I (0:05) -->
+<section class="slide dark divider act1" data-divider="true" data-act="I · La física del arreglo" data-notes="0:05 · [Alonso Hernández · Física/Mate] «Gracias, Gabriel. Bloque I: veamos primero el arreglo físico y luego sus ecuaciones de propagación.»">
+  <div class="div-num grad-act r">01</div>
+  <h2 class="xl r d1">La física del arreglo</h2>
+  <div class="div-rule r d2"></div>
+  <p class="div-sub r d3">Del banco óptico visible y su fabricación en sala limpia a Rayleigh–Sommerfeld, el espectro angular y el criterio de separación mínima \(D_{\min}\).</p>
+</section>
+
+<!-- 5 · DESCRIPCIÓN DEL SISTEMA ÓPTICO DE CHEN ET AL. (0:45) -->
+<section class="slide light act1" data-act="I · La física del arreglo" data-notes="0:45 · [Alonso Hernández · Física/Mate] 👉 Recorre de He–Ne a 11 detectores. «El haz He–Ne se expande en onda plana e ilumina un dígito recortado en metal. Cruza cinco placas transparentes de sílice de 4×4 mm —con un millón de píxeles de 4 µm cada una— separadas 5 cm. Al final esperan 11 zonas detectoras (del 0 al 9 más la clase de rechazo X): gana la que reciba más potencia luminosa.» → ¿Cómo se fabrican estas placas con relieves de apenas nanómetros?">
+  <div class="eyebrow r">I · 1 — Descripción del sistema · Chen et al. (2021)</div>
+  <h2 class="r d1">Un dígito entra.<br><span class="grad-act">Un punto de luz responde.</span></h2>
+
+  <div class="hero-fig r d2" style="margin-top:12px;background:var(--mist);border-color:#e5e5ea;padding:16px 22px">
+    <img src="figs/tikz_banco_optico.svg" alt="Diagrama del montaje óptico en el visible con láser He-Ne y 5 placas de sílice" style="max-height:225px">
+  </div>
+
+  <div class="specs r d3" style="margin-top:14px">
+    <div class="spec" style="padding:15px 18px">
+      <div class="t">1. Entrada coherente</div>
+      <div class="l">El dígito (0–9 o alterado) es una <b>máscara binaria</b> iluminada por una onda plana coherente (salto de \(1000\times\) desde THz).</div>
+    </div>
+    <div class="spec" style="padding:15px 18px">
+      <div class="t">2. Placas de solo fase</div>
+      <div class="l">No absorben luz: cada cuadrito de <b>\(4\,\mu\text{m}\)</b> tiene un espesor tallado que retrasa la fase en \([0,\pi]\).</div>
+    </div>
+    <div class="spec" style="padding:15px 18px">
+      <div class="t">3. Decisión óptica</div>
+      <div class="l">La interferencia concentra la intensidad \(I \propto |E|^2\) en una de 11 zonas (0–9 y rechazo <b>X</b>).</div>
+    </div>
+  </div>
+</section>
+
+<!-- 6 · PROCESO DE FABRICACIÓN EN SALA LIMPIA (0:40) -->
+<section class="slide dark act1" data-act="I · La física del arreglo" data-notes="0:40 · [Alonso Hernández · Física/Mate] 👉 Ruta A arriba izquierda (LDW), Ruta B arriba derecha (escalera de 8 niveles). «En sala limpia fabrican dos cosas por separado: los dígitos de entrada con escritura directa por láser sobre cromo en vidrio; y las cinco placas de sílice con fotolitografía UV y grabado en plasma NLD. Al repetir ese ciclo alineado apenas tres veces, tallan 2^3 = 8 escalones discretos sin esculpir superficies curvas continuas.» → ¿Cuánto mide el escalón más alto y cómo retarda exactamente la onda?">
+  <div class="eyebrow r">I · 2 — Proceso de fabricación en sala limpia · Chen et al. (2021)</div>
+  <h2 class="r d1">Cómo se fabrican<br><span class="grad-act">los dígitos y las placas.</span></h2>
+
+  <div class="card sm r d2" style="margin-top:12px;padding:12px 18px">
+    <img src="figs/tikz_fabricacion_lab.svg" alt="Rutas de fabricación en sala limpia para dígitos en cromo y placas en sílice" style="width:100%;max-height:175px;object-fit:contain;display:block">
+  </div>
+
+  <div class="split r d3" style="margin-top:14px;gap:22px;align-items:stretch">
+    <div class="card sm" style="display:flex;flex-direction:column;gap:8px;padding:15px 20px">
+      <span class="pill info" style="align-self:flex-start;margin-bottom:2px">1. Objetos de entrada · Dígitos transmisivos</span>
+      <h3 style="margin-bottom:2px">Bloqueadores de cromo sobre vidrio</h3>
+      <p style="font-size:14.5px"><b>Sustrato:</b> placas de vidrio de sosa (<em>soda glass</em>) limpiadas con acetona y alcohol isopropílico (IPA).</p>
+      <p style="font-size:14.5px"><b>Recubrimiento metálico:</b> película opaca de <b>cromo (Cr)</b> por evaporación por haz de electrones (<em>e-beam</em>).</p>
+      <p style="font-size:14.5px"><b>Fotolitografía láser:</b> fotorresina positiva y <b>Escritura Directa por Láser (LDW)</b> + mordiente de Cr que abre la silueta.</p>
+    </div>
+
+    <div class="card sm" style="display:flex;flex-direction:column;gap:8px;padding:15px 20px;border-color:rgba(255,159,10,.4)">
+      <span class="pill warn" style="align-self:flex-start;margin-bottom:2px">2. Capas difractivas · La red \(\text{D}^2\text{NN}\)</span>
+      <h3 style="margin-bottom:2px">Topografía 3D en obleas de \(\text{SiO}_2\)</h3>
+      <p style="font-size:14.5px"><b>Sustrato:</b> obleas de <b>sílice fundida (\(\text{SiO}_2\))</b> tratadas con promotor <b>HMDS</b> para adherir la resina.</p>
+      <p style="font-size:14.5px"><b>Transferencia UV y grabado:</b> exposición con el mapa de fases, plasma de \(\text{O}_2\) y grabado <b>NLD</b> en seco.</p>
+      <p style="font-size:14.5px"><b>Proceso multinivel:</b> <b>\(s = 3\) ciclos alineados</b> tallan \(2^3 = 8\) niveles de profundidad discreta.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 7 · RETARDO DE FASE Y REFLEXIÓN DE FRESNEL (0:25) -->
+<section class="slide mist act1" data-act="I · La física del arreglo" data-notes="0:25 · [Alonso Hernández · Física/Mate] 👉 Señala el escalón de vidrio a la derecha y luego el bloque inferior de Fresnel. «Dentro de la sílice fundida, de índice n = 1.457, la luz se frena respecto al aire: basta un escalón de 692 nm —dividido en 8 saltos de 98.9 nm— para lograr media vuelta de desfase, Φ = π. Además calculamos algo omitido en el artículo: las 10 interfaces aire–vidrio reflejan 3.46 % por cara por Fresnel, dejando pasar el 70 % de la potencia sin cambiar qué detector gana.» → Al salir del vidrio, ¿cómo se propaga ese campo hasta la siguiente placa?">
+  <div class="eyebrow r">I · 3 — Retardo óptico en sílice fundida y pérdidas de Fresnel</div>
+  <h2 class="r d1">Espesor = fase.<br><span class="grad-act">El vidrio frena a la luz.</span></h2>
+
+  <div class="split" style="grid-template-columns:1.02fr .98fr;margin-top:12px;gap:26px;align-items:stretch">
+    <div class="stack r d2" style="gap:14px;justify-content:center">
+      <div class="eq-card" style="padding:16px 20px">
+        <div class="eq-title">Retardo de fase en sílice fundida (\(n = 1.457\))</div>
+        \[
+          \Phi = \frac{2\pi}{\lambda}(n - n_0)\Delta h \;\Longrightarrow\; \Delta h_{\pi} = \textcolor{#d70015}{692\text{ nm}}
+        \]
+        <p style="font-size:15px;margin-top:6px"><b>Cuantización a 8 niveles:</b> dividir \(\Phi \in [0,\pi]\) en \(2^3 = 8\) escalones de <b>\(98.9\text{ nm}\)</b> encaja con los \(3\) ciclos litográficos.</p>
+      </div>
+
+      <div class="card" style="padding:16px 20px;border:1px solid rgba(255,159,10,.45)">
+        <span class="pill act" style="margin-bottom:6px">Aporte propio · Reflectancia de Fresnel</span>
+        <p style="font-size:15.5px;line-height:1.42">En cada cara aire–vidrio se refleja \(R = \left(\frac{n-1}{n+1}\right)^2 = 3.46\,\%\). Tras 5 placas (10 caras) se transmite \((1-R)^{10} \approx \mathbf{70\,\%}\): atenúa todos los caminos por igual y <b>no cambia qué detector gana</b>.</p>
+      </div>
+    </div>
+
+    <div class="hero-fig r d3" style="padding:18px">
+      <img src="figs/tikz_retardo_fase.svg" alt="Escalón de sílice fundida produciendo retardo de fase pi y reflexión de Fresnel" style="max-height:330px">
+      <div class="figcap">Al cruzar espesor extra \(\Delta h_\pi = 692\text{ nm}\), la onda emerge desfasada \(\pi\text{ rad}\) respecto al aire.</div>
+    </div>
+  </div>
+</section>
+
+<!-- 8 · PRINCIPIO DE HUYGENS E INTEGRAL DE RAYLEIGH-SOMMERFELD (0:30) -->
+<section class="slide light act1" data-act="I · La física del arreglo" data-notes="0:30 · [Alonso Hernández · Física/Mate] 👉 Señala la onda esférica (x',y') → P y luego la tarjeta inferior de 10^12 operaciones. «Por el principio de Huygens, al salir de la placa cada micro-cuadrito (x',y') irradia una onda esférica secundaria hacia el plano z, descrita exactamente por la integral de Rayleigh–Sommerfeld con factor geométrico cos θ = z/r. El problema computacional es enorme: sumar directamente cada millón de píxeles contra el millón siguiente exige 10^12 operaciones por capa.» → ¿Cómo calculamos esta integral de forma exacta y veloz?">
+  <div class="eyebrow r">I · 4 — Propagación en el espacio libre</div>
+  <h2 class="r d1">Huygens exacto:<br><span class="grad-act">integral de Rayleigh–Sommerfeld.</span></h2>
+
+  <div class="split" style="grid-template-columns:1.05fr .95fr;margin-top:12px;gap:26px;align-items:stretch">
+    <div class="stack r d2" style="gap:14px;justify-content:center">
+      <div class="eq-card" style="padding:16px 20px">
+        <div class="eq-title">Integral de convolución espacial (\(z = D\))</div>
+        \[
+          U(x,y,z) = \iint_{-\infty}^{\infty} U(x',y',0)\,h(x-x',y-y',z)\,\mathrm{d}x'\,\mathrm{d}y'
+        \]
+        <div class="eq-title" style="margin-top:10px">Kernel de onda esférica secundaria (\(r \gg \lambda\))</div>
+        \[
+          h(x,y,z) \approx \frac{1}{j\lambda}\underbrace{\frac{z}{r}}_{\cos\theta}\,\frac{e^{jkr}}{r}, \qquad r = \sqrt{x^2 + y^2 + z^2}
+        \]
+      </div>
+
+      <div class="card" style="padding:15px 20px;background:var(--mist);border-color:rgba(255,69,58,.32)">
+        <h3 style="color:var(--red);margin-bottom:4px">Cuello de botella directo: \(10^{12}\) sumas por capa</h3>
+        <p style="font-size:15px">Conectar \(10^6\) píxeles de entrada contra \(10^6\) píxeles de salida de manera directa exigiría \(10^{12}\) términos por transición (\(6\times 10^{12}\) por imagen).</p>
+      </div>
+    </div>
+
+    <div class="hero-fig r d3" style="background:var(--mist);border-color:#e5e5ea;padding:18px">
+      <img src="figs/tikz_huygens_rs.svg" alt="Ondas esféricas secundarias de Huygens y geometría de Rayleigh-Sommerfeld" style="max-height:330px">
+      <div class="figcap">Cada píxel en \(z=0\) emite un frente esférico de amplitud \(1/r\), fase \(e^{jkr}\) y oblicuidad \(\cos\theta = z/r\).</div>
+    </div>
+  </div>
+</section>
+
+<!-- 9 · ESPECTRO ANGULAR: ONDAS PLANAS INCLINADAS (0:25) -->
+<section class="slide mist act1" data-act="I · La física del arreglo" data-notes="0:25 · [Alonso Hernández · Física/Mate] 👉 Recorre la onda plana inclinada a la derecha y luego el coseno director cos γ. «La salida exacta viene de resolver Helmholtz en el dominio de Fourier: cualquier frente de onda se descompone en ondas planas inclinadas indexadas por sus frecuencias espaciales (u,v). Como muestra el diagrama, cuanto mayor es la frecuencia radial ρ, más inclinado viaja su vector de onda k; y al cruzar la distancia z, cada onda plana solo cambia su fase por exp(jkz cos γ).» → Pero, ¿qué ocurre si las frecuencias espaciales superan 1/λ?">
+  <div class="eyebrow r">I · 5 — De Helmholtz al dominio de frecuencias espaciales</div>
+  <h2 class="r d1">Pasar a Fourier:<br><span class="grad-act">el espectro angular.</span></h2>
+
+  <div class="split" style="grid-template-columns:1.02fr .98fr;margin-top:12px;gap:26px;align-items:stretch">
+    <div class="stack r d2" style="gap:14px;justify-content:center">
+      <div class="eq-card" style="padding:16px 20px">
+        <div class="eq-title">Propagación de cada onda plana \(A(u,v;z)\)</div>
+        \[
+          A(u,v;z) = A(u,v;0)\,\exp\!\left[jkz\sqrt{1-\lambda^2(u^2+v^2)}\right]
+        \]
+        <div class="eq-title" style="margin-top:10px">Coseno director respecto al eje óptico \(z\)</div>
+        \[
+          \cos\gamma = \sqrt{1 - \lambda^2(u^2+v^2)}, \qquad \rho = \sqrt{u^2+v^2}
+        \]
+      </div>
+
+      <div class="card" style="padding:16px 20px">
+        <h3>Por qué acelera de \(O(N^2)\) a \(O(N\log N)\)</h3>
+        <p style="font-size:15.5px">En frecuencias espaciales \((u,v)\), la integral de convolución desaparece: propagar entre placas se reduce a multiplicar cada modo por un factor escalar de fase.</p>
+      </div>
+    </div>
+
+    <div class="hero-fig r d3" style="padding:18px">
+      <img src="figs/tikz_onda_plana.svg" alt="Onda plana inclinada y vector de onda k en espectro angular" style="max-height:330px">
+      <div class="figcap">Cada par \((u,v)\) corresponde a una onda plana con vector \(\mathbf{k}\) inclinado un ángulo \(\gamma\) respecto a \(z\).</div>
+    </div>
+  </div>
+</section>
+
+<!-- 10 · FUNCIÓN DE TRANSFERENCIA H(u,v;z) Y ERRATA (0:25) -->
+<section class="slide light act1" data-act="I · La física del arreglo" data-notes="0:25 · [Alonso Hernández · Física/Mate] 👉 Señala el disco verde/rojo a la derecha y luego la tarjeta roja de errata abajo izquierda. «Vemos aquí el filtro completo H(u,v;z): dentro del disco de radio 1/λ viajan las ondas propagantes con |H| = 1 hasta la siguiente placa; fuera decaen exponencialmente en pocos nanómetros como ondas evanescentes. Destacamos una corrección importante: las ecuaciones 4 y 5 de Chen et al. contienen una errata al multiplicar por H en espacio real en vez de en frecuencias, y todo el campo evoluciona de manera estrictamente lineal hasta los detectores.» → ¿Por qué no bastaron Fraunhofer ni Fresnel del curso?">
+  <div class="eyebrow r">I · 6 — Filtro exacto \(H(u,v;z)\), evaluación FFT y errata</div>
+  <h2 class="r d1">Propagantes vs. evanescentes<br><span class="grad-act">y una errata en el paper.</span></h2>
+
+  <div class="split" style="grid-template-columns:1.06fr .94fr;margin-top:10px;gap:24px;align-items:stretch">
+    <div class="stack r d2" style="gap:12px;justify-content:center">
+      <div class="eq-card" style="padding:14px 18px">
+        <div class="eq-title">Función de transferencia exacta \(H(u,v;z)\)</div>
+        \[
+          H(u,v;z) = \begin{cases} \exp\!\left[jkz\sqrt{1-\lambda^2(u^2+v^2)}\right], & u^2+v^2 \le 1/\lambda^2 \\[3pt] \exp\!\left[-2\pi z\sqrt{u^2+v^2-1/\lambda^2}\right], & u^2+v^2 > 1/\lambda^2 \end{cases}
+        \]
+        <div class="eq-title" style="margin-top:8px">Convolución exacta en tres pasos vía FFT</div>
+        \[
+          U(x,y,z) = \mathcal{F}^{-1}\!\bigl\{\mathcal{F}\{U(x,y,0)\}\cdot H(u,v;z)\bigr\}
+        \]
+      </div>
+
+      <div class="card sm" style="padding:13px 18px;border:1px solid rgba(255,69,58,.35)">
+        <span class="pill bad" style="margin-bottom:4px">Errata en Chen et al. y linealidad</span>
+        <p style="font-size:14.5px;line-height:1.38">Las Ecs. 4–5 del paper multiplican por \(H\) en espacio real en vez de en frecuencias \((u,v)\). Además, sin activaciones no lineales intermedias, el campo \(U\) es <b>estrictamente lineal</b> hasta medir \(I = |U|^2\).</p>
+      </div>
+    </div>
+
+    <div class="hero-fig r d3" style="background:var(--mist);border-color:#e5e5ea;padding:18px">
+      <img src="figs/tikz_disco_frecuencias.svg" alt="Disco de frecuencias propagantes y región exterior evanescente en H(u,v;z)" style="max-height:330px">
+      <div class="figcap">El disco de corte \(1/\lambda\) separa los modos que cruzan los \(5\text{ cm}\) de las ondas evanescentes.</div>
+    </div>
+  </div>
+</section>
+
+<!-- 11 · REGÍMENES DE DIFRACCIÓN: FRAUNHOFER Y FRESNEL FALLAN (0:45) -->
+<section class="slide mist act1" data-act="I · La física del arreglo" data-notes="0:45 · [Alonso Hernández · Física/Mate] 👉 Regla axial izquierda y curva verde vs naranja derecha. «Evaluamos las dos aproximaciones clásicas del curso. A la izquierda: para placas de 4 mm, Fraunhofer exigiría distancias mayores a 19.9 m; a 5 cm nuestro N_F ≈ 126 está cuatrocientas veces dentro del campo cercano. Y a la derecha: Fresnel sustituye la esfera por una parábola; en píxeles de 4 µm el término de cuarto orden acumula 2.4 rad en ejes y 9.7 rad en diagonal —más de vuelta y media de error. Es obligatorio usar el espectro angular exacto.» → Fijémonos ahora en un solo píxel: ¿qué tan ancho es su cono?">
+  <div class="eyebrow r">I · 7 — Regímenes de difracción</div>
+  <h2 class="r d1">Aquí <span class="grad-act">fallan</span> Fraunhofer y Fresnel.</h2>
+
+  <div class="hero-fig r d2" style="margin-top:10px;padding:12px 16px">
+    <img src="figs/tikz_regimenes.svg" alt="Comparación axial campo cercano vs Fraunhofer y curvatura esfera exacta vs parábola de Fresnel" style="max-height:208px">
+  </div>
+
+  <div class="specs r d3" style="margin-top:12px;align-items:stretch">
+    <div class="spec" style="display:flex;flex-direction:column;padding:14px 18px">
+      <span class="pill bad" style="align-self:flex-start;margin-bottom:5px">No válida</span>
+      <div class="v" style="color:var(--red);font-size:30px">\(N_F \approx 126\)</div>
+      <div class="t" style="margin-top:6px">Fraunhofer (campo lejano)</div>
+      <div class="l">Exige \(z \gg \pi a^2 / \lambda \approx 19.9\text{ m}\). A \(D = 5\text{ cm}\) la red opera profundamente en <b>campo cercano</b>.</div>
+    </div>
+    <div class="spec" style="display:flex;flex-direction:column;padding:14px 18px">
+      <span class="pill bad" style="align-self:flex-start;margin-bottom:5px">No válida</span>
+      <div class="v" style="color:var(--amber);font-size:30px">2.4–9.7<small>rad</small></div>
+      <div class="t" style="margin-top:6px">Aproximación de Fresnel</div>
+      <div class="l">Desprecia \(\frac{1}{4}\pi z\lambda^3\rho^4\). Con píxeles de \(4\,\mu\text{m}\) alcanza <b>2.4 rad</b> en ejes y <b>9.7 rad</b> en diagonal.</div>
+    </div>
+    <div class="spec" style="display:flex;flex-direction:column;padding:14px 18px;background:#1d1d1f;color:#f5f5f7;border-color:#2c2c2e">
+      <span class="pill ok" style="align-self:flex-start;margin-bottom:5px;background:rgba(48,209,88,.2);color:#4cd964">Exacta</span>
+      <div class="v" style="color:#30d158;font-size:30px">\(H(u,v;z)\)</div>
+      <div class="t" style="margin-top:6px;color:#fff">Espectro angular</div>
+      <div class="l" style="color:#a1a1a6">Preserva a la vez el campo cercano de la placa completa y los ángulos máximos de cada píxel de \(4\,\mu\text{m}\).</div>
+    </div>
+  </div>
+</section>
+
+<!-- 15 · DIFRACCIÓN DE UNA NEURONA Y FACTOR 2 DE NYQUIST (0:55) -->
+<section class="slide dark act1" data-act="I · La física del arreglo" data-notes="0:55 · [Alonso Hernández · Física/Mate] 👉 Rejilla arriba izquierda y línea roja (+1/2) vs primer cero gris (+1) en la curva sinc². «Chen et al. usan sin demostrar que el semiángulo máximo cumple sin φ_max = λ/(2 d_f). ¿De dónde sale ese factor 2 si una rendija aislada llega a λ/d_f (+1 gris)? De que los píxeles forman una rejilla periódica de paso d_f: por el teorema de muestreo de Shannon–Nyquist, arriba de ±1/(2 d_f) —la línea roja— aparecen réplicas periódicas (aliasing). En luz visible el cono se cierra a apenas 4.54°, frente a ~70° en terahertz.» → Con un cono tan estrecho, ¿qué separación D exige la red?">
+  <div class="eyebrow r">I · 8 — Difracción de una neurona · El origen del factor 2</div>
+  <h2 class="r d1">No es el primer cero.<br><span class="grad-act">Es el límite de muestreo.</span></h2>
+
+  <div class="split w55" style="margin-top:10px;gap:26px">
+    <div class="card sm r d2" style="padding:14px 18px;display:flex;align-items:center;justify-content:center">
+      <img src="figs/tikz_nyquist_sinc.svg" alt="Curva sinc cuadrada exacta con banda controlable de Nyquist en +-1/2 y primer cero en +1" style="width:100%;max-height:415px;object-fit:contain;display:block">
+    </div>
+
+    <div class="stack r d3" style="gap:12px;justify-content:center">
+      <div class="card sm" style="padding:14px 18px">
+        <h3>Abertura aislada vs. rejilla</h3>
+        <p style="font-size:15px">Una rendija cuadrada de ancho \(d_f\) tiene su primer cero en \(\lambda/d_f\); en la mitad todavía irradia el <b>40.5 %</b> del máximo (\(4/\pi^2\)).</p>
+      </div>
+      <div class="card sm" style="padding:14px 18px">
+        <h3>Teorema de muestreo (Nyquist)</h3>
+        <p style="font-size:15px">Al repetir píxeles cada \(d_f\), las frecuencias mayores a \(u_{\max} = \frac{1}{2d_f}\) son réplicas periódicas (<em>aliasing</em>) incontrolables por separado.</p>
+      </div>
+      <div class="card sm" style="padding:14px 18px;border-color:rgba(255,159,10,.45)">
+        <h3 style="color:var(--amber)">\(\varphi_{\max} = 4.54^\circ\) en luz visible</h3>
+        <div class="formula" style="font-size:16.5px;margin:4px 0 4px">
+          \[\sin\varphi_{\max} = \frac{\lambda}{2d_f} = 0.0791 \;\Longrightarrow\; \varphi_{\max} = 4.54^\circ\]
+        </div>
+        <p style="font-size:14.5px">En terahertz era \(\approx 70^\circ\). Al encoger las neuronas a \(4\,\mu\text{m}\), el cono se cierra drásticamente y fija \(D\).</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 16 · CRITERIO GEOMÉTRICO DE CONECTIVIDAD D_MIN (0:25) -->
+<section class="slide mist act1" data-act="I · La física del arreglo" data-notes="0:25 · [Alonso Hernández · Física/Mate] 👉 Señala el cono de borde a borde a la izquierda y luego los 3 pasos de despeje. «Para que la red esté totalmente conectada, exigimos geométricamente que incluso una neurona de la orilla cubra todo el ancho w = 4 mm de la placa siguiente (R = D tan φ_max ≥ w). Sustituyendo sin φ_max = λ/(2 d_f) despejamos exactamente D_mín = 50.4 mm —justificando por qué el montaje separa las capas D ≈ 5 cm.» → ¿Cómo resumimos este comportamiento en un parámetro adimensional?">
+  <div class="eyebrow r">I · 9 — Conectividad geométrica entre capas</div>
+  <h2 class="r d1">Cada píxel debe «ver»<br><span class="grad-act">toda la placa siguiente.</span></h2>
+
+  <div class="split w45" style="margin-top:12px;gap:26px;align-items:stretch">
+    <div class="hero-fig r d2" style="padding:18px">
+      <img src="figs/tikz_cono_dmin.svg" alt="Cono mínimo desde la neurona del borde cubriendo todo el ancho w de la placa siguiente" style="max-height:315px">
+      <div class="figcap">El haz emitido desde la orilla inferior debe cubrir al menos toda la altura \(w = \sqrt{N}\,d_f = 4\text{ mm}\).</div>
+    </div>
+
+    <div class="eq-steps r d3" style="justify-content:center">
+      <div class="eq-step">
+        <div class="step-num">1</div>
+        <div class="step-body">
+          <h4>Geometría de borde a borde (\(R \ge w\))</h4>
+          <p>Con ancho de placa \(w = \sqrt{N}\,d_f = 4\text{ mm}\) y radio del cono \(R = D\tan\varphi_{\max}\):</p>
+          \[D \ge \frac{w}{\tan\varphi_{\max}} = w\,\frac{\sqrt{1 - \sin^2\varphi_{\max}}}{\sin\varphi_{\max}}\]
+        </div>
+      </div>
+
+      <div class="eq-step">
+        <div class="step-num">2</div>
+        <div class="step-body">
+          <h4>Sustituir Nyquist (\(\sin\varphi_{\max} = \lambda / (2d_f)\))</h4>
+          <p>Se obtiene en forma cerrada la separación mínima física entre placas:</p>
+          \[D_{\min} = \sqrt{N}\,d_f\sqrt{\frac{4d_f^2}{\lambda^2} - 1} = \textcolor{#d70015}{50.4\text{ mm}}\]
+        </div>
+      </div>
+
+      <div class="eq-step" style="border-left:4px solid var(--accent)">
+        <div class="step-num">3</div>
+        <div class="step-body">
+          <h4>Explicación exacta del montaje experimental</h4>
+          <p>Explica de primeros principios por qué Chen et al. eligen \(D \approx 5\text{ cm}\) para sus \(1000\times 1000\) neuronas visibles.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 17 · NÚMERO DE FRESNEL NEURONAL N_F,n Y PUENTE A SIMULACIÓN (0:30) -->
+<section class="slide light act1" data-act="I · La física del arreglo" data-notes="0:30 · [Alonso Hernández → Gabriel Velázquez · Relevo 2] 👉 Señala las dos cajitas (sombra roja vs conectividad verde) y abajo la identidad D_mín ≡ z_c. «Resumimos toda esta física en dos resultados propios clave: el número de Fresnel neuronal N_{F,n} = d_f^2 / (λ D) separa cuándo no hay mezcla lateral —cajita roja— de cuándo hay conectividad total —cajita verde. Y evitar aliasing en la FFT con relleno 2× impone una distancia crítica z_c algebraicamente idéntica a D_mín. Con este puente, Gabriel Velázquez continúa con Deep Learning y resultados en GPU.»">
+  <div class="eyebrow r">I · 10 — Escalamiento adimensional y puente con la simulación</div>
+  <h2 class="r d1">Un único invariante:<br><span class="grad-act">\(N_{F,n}\) y \(D_{\min} \equiv z_c\).</span></h2>
+
+  <div class="card sm r d2" style="margin-top:10px;padding:16px 22px;background:var(--mist);border-color:#e5e5ea">
+    <span class="pill act" style="margin-bottom:6px">Aporte propio · Proposición 4.1</span>
+    <h3>Número de Fresnel de un píxel: \(N_{F,n} = \dfrac{d_f^2}{\lambda D}\) &nbsp;\(\implies\)&nbsp; \(\dfrac{D}{D_{\min}} \approx \dfrac{1}{2\sqrt{N}\,N_{F,n}}\)</h3>
+    <p style="font-size:15.5px;margin:6px 0 10px">Mide cuántas zonas de Fresnel abarca una neurona de lado \(d_f\) vista desde la placa siguiente y predice cuándo colapsa la mezcla entre capas:</p>
+    <img src="figs/tikz_nf_regimenes.svg" alt="Comparación entre régimen geométrico sin mezcla N_Fn mucho mayor que 1 y conectividad total" style="width:100%;max-height:118px;object-fit:contain;display:block">
+  </div>
+
+  <div class="card sm r d3" style="margin-top:14px;padding:16px 22px;border:1.5px solid rgba(48,209,88,.45)">
+    <span class="pill ok" style="margin-bottom:6px">Aporte propio · Proposición 5.1 (Puente al Acto II)</span>
+    <h3>Física = Simulación numérica: \(D_{\min} \equiv z_c\)</h3>
+    <p style="font-size:16px;line-height:1.44">Al simular la difracción por FFT con relleno \(2\times\), evitar el <em>aliasing</em> de fase (Matsushima &amp; Shimobaba, 2009) impone una distancia crítica <b>\(z_c\) algebraicamente idéntica a \(D_{\min}\)</b> (verificada a <b>1.000000</b> en 15 pares de parámetros).</p>
+  </div>
+</section>
+
+<!-- 15 · SEPARADOR BLOQUE II (0:05) -->
+<section class="slide dark divider act2" data-divider="true" data-act="II · Del perceptrón a la óptica" data-notes="0:05 · [Gabriel Velázquez · DL/Cómputo] «Gracias, Alonso. Ya vimos las leyes de propagación y conectividad; ahora veamos cómo traducirlas a redes neuronales entrenables, cómo evitamos el aliasing en la FFT y cómo entrenamos cinco millones de fases.»">
+  <div class="div-num grad-act r">02</div>
+  <h2 class="xl r d1">Del perceptrón a la óptica</h2>
+  <div class="div-rule r d2"></div>
+  <p class="div-sub r d3">Isomorfismo con Deep Learning, simulación sin <em>aliasing</em> (\(D_{\min} \equiv z_c\)), validación exacta y gradiente holográfico de Wirtinger.</p>
+</section>
+
+<!-- 16 · EL PERCEPTRÓN Y LA RED MULTICAPA (0:25) -->
+<section class="slide light act2" data-act="II · Del perceptrón a la óptica" data-notes="0:25 · [Gabriel Velázquez · DL/Cómputo] 👉 Señala el diagrama (Σ → g(z)) y luego el plano OR. «Recordemos qué hace una neurona digital: multiplica entradas por pesos w_i, suma todo, aplica una función no lineal y traza una recta separadora. Al apilar varias capas en un MLP logramos clasificar imágenes complejas como MNIST.» → ¿Qué componente del banco óptico reemplaza cada bloque?">
+  <div class="eyebrow r">II · 1 — De una neurona a una red profunda</div>
+  <h2 class="r d1">Primero: ¿qué es <span class="grad-act">un perceptrón?</span></h2>
+
+  <div class="split w55" style="margin-top:10px;gap:28px">
+    <div class="card sm r d2" style="padding:14px 18px;display:flex;align-items:center;justify-content:center">
+      <img src="figs/tikz_perceptron.svg" alt="Neurona formal de Rosenblatt y frontera lineal OR" style="width:100%;max-height:365px;object-fit:contain;display:block">
+    </div>
+
+    <div class="stack r d3" style="gap:14px">
+      <div class="card">
+        <h3>1. Suma ponderada y activación</h3>
+        <p>Calcula \(z = \mathbf{w}^\top \mathbf{x} + b\) y aplica una función no lineal \(y = g(z)\) (sigmoide o ReLU) para decidir la salida.</p>
+      </div>
+      <div class="card">
+        <h3>2. Entrenar = ajustar pesos</h3>
+        <p>Con ejemplos de etiqueta conocida \(t\), corrige cada peso según el error: \(w_i \leftarrow w_i - \eta(y - t)x_i\).</p>
+      </div>
+      <div class="card" style="border:1.5px solid rgba(41,151,255,.45)">
+        <h3 style="color:var(--blue)">3. Perceptrón multicapa (MLP)</h3>
+        <p>Apilando capas \(\mathbf{a}^{[l]} = \sigma(\mathbf{W}^{[l]}\mathbf{a}^{[l-1]} + \mathbf{b}^{[l]})\), combinamos muchas fronteras para clasificar imágenes como MNIST.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 17 · ISOMORFISMO Y LINEALIDAD EN EL CAMPO (0:35) -->
+<section class="slide dark act2" data-act="II · Del perceptrón a la óptica" data-notes="0:35 · [Gabriel Velázquez · DL/Cómputo] 👉 Tabla arriba y ecuación central abajo. «Aquí vemos el puente uno a uno: el producto matriz-vector W·a de una GPU aquí lo hacen los conos de difracción P_D, y los pesos son los grosores que multiplican por e^{jΦ}. Pero vean la ecuación: entre vidrios no hay ReLU ni función no lineal; todo equivale a un solo operador lineal M, y la única no linealidad ocurre al medir intensidad |Y_sal|² en los detectores. Aun así, apilar 5 placas da 5 millones de grados de libertad.» → ¿Cómo simulamos esta física sin errores numéricos?">
+  <div class="eyebrow r">II · 2 — El puente entre Deep Learning y Óptica</div>
+  <h2 class="r d1">De matrices en silicio <span class="grad-act">a difracción en vidrio.</span></h2>
+
+  <div class="card sm r d2" style="margin-top:12px;padding:10px 22px">
+    <table class="clean" style="font-size:15.5px">
+      <thead>
+        <tr>
+          <th style="width:18%;color:#a1a1a6;border-bottom-color:#2c2c2e;padding:6px">Componente</th>
+          <th style="width:41%;color:#2997ff;border-bottom-color:#2c2c2e;padding:6px">Red neuronal digital (MLP)</th>
+          <th style="width:41%;color:#ff9f0a;border-bottom-color:#2c2c2e;padding:6px">Red neuronal difractiva (D²NN)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="border-bottom-color:#242426;padding:6px"><b>Neurona</b></td>
+          <td style="border-bottom-color:#242426;color:#d1d1d6;padding:6px">Activación escalar \(a_i^{[l]}\) en memoria</td>
+          <td style="border-bottom-color:#242426;color:#f5f5f7;padding:6px">Píxel de vidrio de \(4 \times 4\,\mu\text{m}\) (\(10^6\)/capa)</td>
+        </tr>
+        <tr>
+          <td style="border-bottom-color:#242426;padding:6px"><b>Pesos</b></td>
+          <td style="border-bottom-color:#242426;color:#d1d1d6;padding:6px">Matriz \(\mathbf{W}^{[l]}\) y sesgo \(\mathbf{b}^{[l]}\)</td>
+          <td style="border-bottom-color:#242426;color:#f5f5f7;padding:6px">Desfase \(t^l = e^{j\Phi^l}\) (\(\Phi^l \in [0,\pi]\), grosor)</td>
+        </tr>
+        <tr>
+          <td style="border-bottom-color:#242426;padding:6px"><b>Conexiones</b></td>
+          <td style="border-bottom-color:#242426;color:#d1d1d6;padding:6px">Producto \(\mathbf{W}^{[l]}\mathbf{a}^{[l-1]}\) en GPU</td>
+          <td style="border-bottom-color:#242426;color:#f5f5f7;padding:6px">Propagación libre \(\mathcal{P}_D\) (difracción)</td>
+        </tr>
+        <tr>
+          <td style="border-bottom:none;padding:6px"><b>No linealidad</b></td>
+          <td style="border-bottom:none;color:#d1d1d6;padding:6px">Función \(\sigma(z)\) o ReLU en cada capa</td>
+          <td style="border-bottom:none;color:#4cd964;padding:6px"><b>Solo al final</b> al medir intensidad \(|Y^{\text{sal}}|^2\)</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="eq-card r d3" style="margin-top:14px">
+    <div class="eq-title" style="color:#5ac8fa">Consecuencia física: toda la cadena de 5 placas es un operador lineal \(\mathcal{M}\)</div>
+    \[
+      Y^{\text{sal}} = \underbrace{\mathcal{P}_D\,\mathcal{T}^5\,\mathcal{P}_D\,\mathcal{T}^4\,\mathcal{P}_D\,\mathcal{T}^3\,\mathcal{P}_D\,\mathcal{T}^2\,\mathcal{P}_D\,\mathcal{T}^1\,\mathcal{P}_D}_{\equiv\;\mathcal{M}\text{ (operador lineal complejo)}}\;Y^{\text{ent}},
+      \qquad
+      E_k = \iint_{\text{det}_k} \bigl|Y^{\text{sal}}\bigr|^2\,\mathrm{d}x\,\mathrm{d}y
+    \]
+  </div>
+
+  <div class="split r d4" style="margin-top:12px;gap:16px">
+    <div class="card sm">
+      <h3 style="color:#ff9f0a">¿Por qué 5 placas y no solo 1?</h3>
+      <p>Una sola máscara tiene pocas «perillas» (solo \(10^6\) fases sin cambiar amplitud). Apilar \(L=5\) capas aporta \(5\times 10^6\) grados de libertad para esculpir \(\mathcal{M}\).</p>
+    </div>
+    <div class="card sm" style="border-color:rgba(48,209,88,.4)">
+      <h3 style="color:#4cd964">El precio de la pasividad</h3>
+      <p>Sin no linealidades entre vidrios, la red tiene un techo expresivo cerca del <b>~91 %</b> en MNIST (frente a &gt;99 % en GPU), a cambio de <b>0 W</b> en inferencia.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 18 · SIMULACIÓN DISCRETA: EFECTO PAC-MAN Y RELLENO 2x (0:30) -->
+<section class="slide light act2" data-act="II · Del perceptrón a la óptica" data-notes="0:30 · [Gabriel Velázquez · DL/Cómputo] 👉 Señala arriba (sin relleno = Pac-Man) y abajo (colchón de ceros). «La FFT ve nuestra placa como un tapiz infinito de copias idénticas: si propagamos directo sobre 1000×1000, la luz que sale por la derecha entra por la izquierda (efecto Pac-Man). Por eso rodeamos la placa con un colchón de ceros al doble (2000×2000) y al final recortamos al tamaño real w=4 mm —lo que además modela que la luz fuera del vidrio se pierde.» → Pero, ¿qué pasa si un rayo es tan inclinado que cruza todo ese colchón de ceros?">
+  <div class="eyebrow r">II · 3 — Cómo simulamos la difracción en computadora</div>
+  <h2 class="r d1">FFT periódica: <span class="grad-act">el efecto Pac-Man y el relleno \(2\times\).</span></h2>
+
+  <div class="card sm r d2" style="margin-top:10px;padding:12px 18px">
+    <img src="figs/tikz_fft_padding.svg" alt="Efecto Pac-Man en FFT sin relleno frente a relleno 2x con ceros" style="width:100%;max-height:190px;object-fit:contain;display:block">
+  </div>
+
+  <div class="eq-card r d3" style="margin-top:12px">
+    <div class="eq-title">Propagador discreto en PyTorch (1 muestra por neurona, \(\Delta x = d_f = 4\,\mu\text{m}\))</div>
+    \[
+      Y^{l+1} = \mathrm{recorte}\Bigl\{\mathrm{IFFT}\bigl[\mathrm{FFT}\{\mathrm{relleno}(Y^l \circ t^l)\}\cdot H(u_m,v_{m'};D)\bigr]\Bigr\}
+    \]
+  </div>
+
+  <div class="kv-grid r d4">
+    <div class="kv">
+      <div class="sym">\(Y^l \circ t^l\)</div>
+      <p><b>Producto de Hadamard</b> (píxel a píxel, no de matrices): multiplica cada neurona por \(t^l_i = e^{j\Phi^l_i}\).</p>
+    </div>
+    <div class="kv">
+      <div class="sym">\(N_p = 2\sqrt{N} = 2000\)</div>
+      <p>Ventana rellena con ceros de \(8 \times 8\text{ mm}\), dando paso en frecuencias \(\Delta u = \frac{1}{2w} = 125\text{ m}^{-1}\).</p>
+    </div>
+    <div class="kv">
+      <div class="sym">\(\mathrm{recorte}(w\times w)\)</div>
+      <p>Conserva solo los \(4 \times 4\text{ mm}\) centrales: <b>modela placas finitas</b> donde la luz exterior se pierde.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 19 · BANDA LIMITADA E IDENTIDAD D_MIN ≡ z_c (0:35) -->
+<section class="slide mist act2" data-act="II · Del perceptrón a la óptica" data-notes="0:35 · [Gabriel Velázquez · DL/Cómputo] 👉 Recorre los 3 pasos de la izquierda y luego el cuadro verde D_mín ≡ z_c. «Si un rayo muy inclinado se desvía más que el ancho w = 4 mm del colchón de ceros, vuelve a invadir la placa: en frecuencia eso equivale a que H oscile más rápido de π por paso y haga aliasing. Matsushima y Shimobaba apagan H = 0 arriba de f_lim —lo cual es físicamente exacto porque esa luz igual se saldría del vidrio. Y lo sorprendente: al igualar f_lim con el límite de Nyquist de nuestras neuronas, despejamos exactamente la misma ecuación D_mín de la física.» → Veamos cómo validamos esto en PyTorch.">
+  <div class="eyebrow r">II · 4 — Espectro angular de banda limitada (Matsushima &amp; Shimobaba, 2009)</div>
+  <h2 class="r d1">El límite físico <span class="grad-act">es el límite numérico.</span></h2>
+
+  <div class="split w60" style="margin-top:12px;gap:26px;align-items:stretch">
+    <div class="eq-steps r d2">
+      <div class="eq-step">
+        <div class="step-num">1</div>
+        <div class="step-body">
+          <h4>No cruzar el colchón de ceros (\(z\tan\theta \le w\))</h4>
+          <p>Con \(\sin\theta = \lambda u\) y \(w = \frac{1}{2\Delta u}\), la onda plana con frecuencia \(u\) se salva del <em>aliasing</em> solo si:</p>
+          \[\frac{z\,|u|}{\sqrt{1/\lambda^2 - u^2}} \le \frac{1}{2\Delta u}\]
+        </div>
+      </div>
+
+      <div class="eq-step">
+        <div class="step-num">2</div>
+        <div class="step-body">
+          <h4>Despejar \(f_{\lim}\) (espectro angular de banda limitada)</h4>
+          <p>Ponemos \(H = 0\) fuera de \(f_{\lim}\): esas ondas igual se perderían fuera del vidrio de \(4\text{ mm}\).</p>
+          \[|u|, |v| \le f_{\lim} \equiv \frac{1}{\lambda\sqrt{(2\Delta u\,z)^2 + 1}}\]
+        </div>
+      </div>
+
+      <div class="eq-step" style="border:1.5px solid rgba(41,151,255,.45)">
+        <div class="step-num">3</div>
+        <div class="step-body">
+          <h4>Igualar \(f_{\lim}\) a Nyquist (\(1/2d_f\)) &rarr; Proposición 5.1</h4>
+          <p>Sin límite de banda (ingenuo), el código falla a partir de la distancia crítica \(z_c\):</p>
+          \[z_c = \sqrt{N}\,d_f\sqrt{\frac{4d_f^2}{\lambda^2} - 1} \;\equiv\; D_{\min} = \textcolor{#ff453a}{50.4\text{ mm}}\]
+        </div>
+      </div>
+    </div>
+
+    <div class="stack r d3" style="gap:14px;justify-content:space-between">
+      <div class="card" style="background:#1d1d1f;color:#f5f5f7;border:none;padding:22px 24px">
+        <span class="pill ok" style="background:rgba(48,209,88,.22);color:#4cd964">Proposición 5.1 · Verificada</span>
+        <div style="font-size:38px;font-weight:800;letter-spacing:-1.5px;color:#30d158;margin:4px 0 8px">\(D_{\min} \equiv z_c\)</div>
+        <p style="color:#d1d1d6;font-size:15.5px;line-height:1.42">La separación del artículo (\(D \approx 50\text{ mm}\)) cae justo sobre \(z_c = 50.4\text{ mm}\) (\(50.6\text{ mm}\) paraxial). Verificamos \(f_{\lim}(D_{\min})\cdot 2d_f = \mathbf{1.000000}\) en 15 pares \((\sqrt{N}, d_f)\).</p>
+      </div>
+
+      <div class="card" style="border:1.5px solid rgba(255,159,10,.45);padding:18px 22px">
+        <span class="pill warn">Ingeniería numérica · Doble precisión</span>
+        <h3>¿Por qué calcular \(H\) en <code>float64</code>?</h3>
+        <p style="font-size:15.5px;line-height:1.42">En \(D = 5\text{ cm}\), la fase \(kD \approx 4.96\times 10^5\text{ rad}\). En <code>float32</code> habría saltos de redondeo de <b>0.031 rad</b>. Evaluamos \(H\) en <b>64 bits</b> y luego convertimos a <code>complex64</code> para GPU.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 20 · VALIDACIÓN DEL SIMULADOR ÓPTICO (0:25) -->
+<section class="slide light act2" data-act="II · Del perceptrón a la óptica" data-notes="0:25 · [Gabriel Velázquez · DL/Cómputo] 👉 Curva roja (99 % aliasing) vs curva azul (< 9.1 %). «Validamos nuestro propagador en PyTorch contra tres referencias exactas: 0.04 % frente a las integrales de Fresnel en abertura cuadrada y 3.6 % en el eje de una abertura circular frente a Rayleigh–Sommerfeld. Y en esta gráfica se ve el peligro: el método ingenuo —curva roja— dispara el error entre 22 y 99 %, mientras nuestra banda limitada —curva azul— lo acota por debajo del 9.1 %.» → Con el motor físico validado, ¿cómo entrenamos cinco millones de fases?">
+  <div class="eyebrow r">II · 5 — Verificación física del propagador en PyTorch</div>
+  <h2 class="r d1">Validado contra <span class="grad-act">soluciones exactas.</span></h2>
+
+  <div class="split w60" style="margin-top:14px;gap:26px">
+    <div class="hero-fig r d2">
+      <img src="figs/aliasing.svg" alt="Aliasing del espectro angular vs banda limitada" style="max-height:390px">
+      <div class="figcap">Error frente a la integral de Rayleigh–Sommerfeld directa (\(z = 1\text{ a }20\,z_c\), neuronas de \(4\,\mu\text{m}\))</div>
+    </div>
+
+    <div class="stack r d3" style="gap:14px">
+      <div class="spec" style="padding:16px 20px">
+        <div class="v grad-act">0.04<small>%</small></div>
+        <div class="l">Error máximo frente a la solución analítica de <b>Fresnel</b> (abertura cuadrada de \(200\,\mu\text{m}\) a \(z = 8\text{ mm}\), \(N_F \approx 2\)).</div>
+      </div>
+      <div class="spec" style="padding:16px 20px">
+        <div class="v" style="color:var(--blue)">3.6<small>%</small></div>
+        <div class="l">Error máximo en el eje de una <b>abertura circular</b> (\(a = 40\,\mu\text{m}\)) frente a Rayleigh–Sommerfeld exacta (\(z \ge 0.3\text{ mm}\)).</div>
+      </div>
+      <div class="spec" style="padding:16px 20px;border-color:rgba(255,69,58,.35)">
+        <div class="v grad-warm">99% &rarr; 9.1%</div>
+        <div class="l">Con banda limitada el error queda en <b>3.5–9.1 %</b> (luz que realmente sale de \(w\)), frente a <b>22–99 %</b> del método ingenuo.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 21 · RETROPROPAGACIÓN ÓPTICA: GRADIENTE HOLOGRÁFICO (0:30) -->
+<section class="slide dark act2" data-act="II · Del perceptrón a la óptica" data-notes="0:30 · [Gabriel Velázquez · DL/Cómputo] 👉 Señala arriba ida (+D) y regreso (−D) y luego la fórmula verde. «Entrenar antes de fabricar funciona igual que grabar un holograma. Enviamos la luz hacia adelante (+D), medimos qué detectores fallan y mandamos esa onda de error viajando hacia atrás (−D) usando la conjugada compleja H* —porque la FFT es unitaria. Donde ambas ondas se cruzan en la placa l, su interferencia nos da el gradiente exacto de Wirtinger para ajustar los 5 millones de grosores. Lo programamos a mano y coincide con autograd de PyTorch a 4.49 × 10^-16.» → Pasemos al Acto III para ver qué descubrimos.">
+  <div class="eyebrow r">II · 6 — Retropropagación óptica y cálculo de Wirtinger</div>
+  <h2 class="r d1">Aprender es grabar <span class="grad-act">un holograma.</span></h2>
+
+  <div class="card sm r d2" style="margin-top:10px;padding:10px 18px">
+    <img src="figs/tikz_wirtinger.svg" alt="Propagación directa (+D), onda de error inversa (-D) e interferencia holográfica" style="width:100%;max-height:175px;object-fit:contain;display:block">
+  </div>
+
+  <div class="split r d3" style="margin-top:12px;gap:20px;align-items:stretch">
+    <div class="eq-card" style="display:flex;flex-direction:column;justify-content:space-between">
+      <div class="eq-title" style="color:#5ac8fa">Pasos clave de Wirtinger (\(G \equiv \partial\mathcal{L}/\partial Y^*\))</div>
+      <div style="font-size:15.5px;line-height:1.45;color:#d1d1d6">
+        \[\mathcal{P}_D^\dagger = \mathcal{F}^{-1}\,\mathrm{diag}(H^*)\,\mathcal{F} = \mathcal{P}_{-D}\]
+        \[\frac{\partial\mathcal{L}}{\partial\Phi_i^l} = 2\,\operatorname{Im}\!\left\{G_i^{W,l}\,(W_i^l)^*\right\}\]
+      </div>
+      <p style="font-size:14.5px;color:#a1a1a6">Como la FFT normalizada es unitaria, conjugar \(H\) equivale a propagar el error hacia atrás (\(-D\)). Con <b>una ida y una vuelta</b> se calculan los 5 millones de gradientes.</p>
+    </div>
+
+    <div class="stack" style="gap:10px;justify-content:space-between">
+      <div class="card sm">
+        <h3>¿Por qué «holográfico»?</h3>
+        <p>Un holograma registra \(|W + R|^2\), cuyo término cruzado es \(R W^*\). Aquí el gradiente usa exactamente el producto cruzado \(G^W W^*\) entre la onda real y la de error.</p>
+      </div>
+      <div class="card sm">
+        <h3>Sigmoide y normalización</h3>
+        <p>\(\Phi = \pi\,\sigma(\theta) \in [0,\pi]\) para fabricabilidad, y \(s_k = T\,E_k / \sum E_j\) (\(T=10\)) para no depender de la potencia del láser.</p>
+      </div>
+      <div class="strip" style="padding:11px 18px">
+        <div class="left" style="font-size:14.5px"><b><code>07_check_gradient.py</code> (doble precisión):</b> los 5 pasos a mano coinciden con PyTorch <code>autograd</code> al límite de máquina.</div>
+        <div class="badge" style="color:#4cd964;font-size:21px">\(4.49\times 10^{-16}\)</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 22 · SEPARADOR BLOQUE III (0:05) -->
+<section class="slide dark divider act3" data-divider="true" data-act="III · Resultados" data-notes="0:05 · [Gabriel Velázquez · DL/Cómputo] «Bloque III: pasemos a los experimentos numéricos. Veremos la reproducción del artículo, dos errores que detectamos, leyes de escala, tolerancias en laboratorio y el sistema completo en GPU.»">
+  <div class="div-num grad-act r">03</div>
+  <h2 class="xl r d1">Resultados</h2>
+  <div class="div-rule r d2"></div>
+  <p class="div-sub r d3">Reproducción de la Fig. 6, conectividad acumulada \(1/(L+1)\), óptica emergente, tolerancias de fabricación y sistema \(1000\times 1000\) en GPU.</p>
+</section>
+
+<!-- 23 · REPRODUCCIÓN FIG. 6 (0:25) -->
+<section class="slide light act3" data-act="III · Resultados" data-notes="0:25 · [Gabriel Velázquez · DL/Cómputo] 👉 Gráfica a la izquierda (curva D_mín) y fila resaltada en la tabla. «Empezamos reproduciendo los 4 casos pequeños de la Figura 6 del artículo: placas de 80×80 neuronas para 10 dígitos. En los Casos 1 y 2, que están justo sobre la curva de conectividad, reproducimos cerca del 90 %. Pero miren el Caso 3: el artículo reporta un valor en su gráfica (flecha arriba) y otro 10× menor en su tabla (cruz abajo).» → Veamos qué pasa al simular ambos y qué ocurrió en el Caso 4.">
+  <div class="eyebrow r">III · 1 — Red de prueba (80 &times; 80 píxeles, 10 clases, 20 épocas)</div>
+  <h2 class="r d1">Reproducción de la <span class="grad-act">Figura 6 del paper.</span></h2>
+
+  <div class="split w55" style="margin-top:14px;gap:26px">
+    <div class="hero-fig r d2">
+      <img src="figs/fig6b.svg" alt="Curva D_min y casos 1-4 de la Fig. 6b" style="max-height:390px">
+      <div class="figcap">Curva \(D_{\min}(d_f)\) para \(\sqrt{N}=80\) y ubicación de los 4 casos (flecha \(10\times\) en el Caso 3)</div>
+    </div>
+
+    <div class="stack r d3" style="gap:14px">
+      <div class="card" style="padding:12px 18px">
+        <table class="clean" style="font-size:15.5px">
+          <thead>
+            <tr>
+              <th>Caso</th><th>\(d_f\,(\lambda)\)</th><th>\(D\,(\lambda)\)</th><th>\(D/D_{\min}\)</th><th>Paper</th><th>Aquí</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>1</td><td>0.53</td><td>15</td><td>1.01</td><td>90.0 %</td><td><b>89.8 %</b></td></tr>
+            <tr><td>2</td><td>6</td><td>\(5.7\times 10^3\)</td><td>0.99</td><td>91.0 %</td><td><b>89.0 %</b></td></tr>
+            <tr><td>3 (gráf.)</td><td>6</td><td>\(2.4\times 10^4\)</td><td>4.18</td><td>91.2 %</td><td>84.8 %</td></tr>
+            <tr style="background:#eefbf1"><td><b>3 (tabla)</b></td><td>6</td><td><b>\(2.4\times 10^3\)</b></td><td><b>0.42</b></td><td><b>91.2 %</b></td><td><b style="color:#1a7f37">91.2 %</b></td></tr>
+            <tr><td>4</td><td>12</td><td>15</td><td>0.00065</td><td>«~0.1»</td><td><b style="color:#d70015">14.4 %</b></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="card sm">
+        <h3>Configuración experimental reducida</h3>
+        <p>\(10\,000\) imágenes de entrenamiento y \(500\) de prueba con Adam (\(\text{lr}=10^{-3}\)). Casos 1 y 2 validan el criterio sobre \(D = D_{\min}\).</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 24 · LAS DOS INCONSISTENCIAS DEL PAPER + MATRICES (0:30) -->
+<section class="slide mist act3" data-act="III · Resultados" data-notes="0:30 · [Gabriel Velázquez · DL/Cómputo] 👉 Matrices a la izquierda y tarjetas 1 y 2 a la derecha. «Detectamos dos inconsistencias claras. Primero, en el Caso 3: con la distancia larga de la gráfica cae a 84.8 % porque la luz se fuga por los bordes de la placa; pero con el valor de la tabla —que está a solo 0.42 D_mín— nos da exactamente 91.2 %. Segundo, en el Caso 4 escriben '~0.1 %', lo cual es imposible porque adivinar al azar entre 10 clases da 10 % (fracción 0.1). Aquí su cono mide menos de un píxel (R = 0.6 λ), la fase no cambia la intensidad local y la matriz colapsa en franjas verticales con 14.4 %.» → Si Caso 3 logró 91.2 % a 0.42 D_mín, ¿era demasiado estricto D_mín?">
+  <div class="eyebrow r">III · 2 — Diagnóstico crítico del artículo</div>
+  <h2 class="r d1">Hallamos <span class="grad-warm">dos inconsistencias.</span></h2>
+
+  <div class="split w45" style="margin-top:12px;gap:28px;align-items:stretch">
+    <div class="hero-fig r d2" style="padding:12px 14px">
+      <img src="figs/fig6_confusions.svg" alt="Matrices de confusión Casos 1-4" style="max-height:435px">
+      <div class="figcap">Matrices de confusión (500 pruebas): diagonales limpias en 1–3 y colapso vertical en Caso 4</div>
+    </div>
+
+    <div class="stack r d3" style="gap:16px;justify-content:center">
+      <div class="card" style="border-left:5px solid #ff9f0a;padding:20px 22px">
+        <span class="pill warn">Inconsistencia 1 · Caso 3 (error \(10\times\))</span>
+        <h3 style="margin-bottom:6px">Gráfica (\(4.18\,D_{\min}\)) vs. Tabla (\(0.42\,D_{\min}\))</h3>
+        <p style="font-size:16px;line-height:1.42">Con la gráfica (\(2.4\times 10^4\lambda\)), la luz se escapa por los bordes de la apertura finita y baja a <b>84.8 %</b>. Con la tabla (\(2.4\times 10^3\lambda\)) obtenemos <b>91.2 % exacto</b> —¡aun estando «debajo» de \(D_{\min}\)!</p>
+      </div>
+
+      <div class="card" style="border-left:5px solid #ff453a;padding:20px 22px">
+        <span class="pill bad">Inconsistencia 2 · Caso 4 («~0.1 %» imposible)</span>
+        <h3 style="margin-bottom:6px">Azar en 10 clases = 10 % (fracción 0.1)</h3>
+        <p style="font-size:16px;line-height:1.42">Con \(d_f = 12\lambda\) (\(\varphi_{\max} = 2.39^\circ\)) y \(D = 15\lambda\), el cono solo se abre \(R \approx 0.6\lambda &lt; d_f\). Como una placa de solo fase no altera la intensidad local sin difracción lateral, la salida copia a la entrada (<b>14.4 %</b>).</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 25 · BARRIDO DE DISTANCIA: COLAPSO POR N_F,n (0:25) -->
+<section class="slide light act3" data-act="III · Resultados" data-notes="0:25 · [Gabriel Velázquez · DL/Cómputo] 👉 Curvas encimadas de 6λ y 12λ y la línea vertical de 0.1 D_mín. «Para responder esa pregunta barrimos la distancia en tres órdenes de magnitud. Miren dos cosas impresionantes: primero, las curvas de 6λ y 12λ caen exactamente una encima de la otra punto por punto, confirmando nuestra Proposición 4.1 del número de Fresnel neuronal N_{F,n}. Y segundo, en 0.1 D_mín la red ya alcanza el 88.4 %: la regla D_mín del artículo es diez veces más estricta de lo necesario.» → ¿Por qué funciona si las placas están diez veces más cerca?">
+  <div class="eyebrow r">III · 3 — Barrido continuo de \(D / D_{\min}\) (\(L = 5\) placas, 20 épocas)</div>
+  <h2 class="r d1">Diez veces más <span class="grad-act">estricto de lo necesario.</span></h2>
+
+  <div class="split w60" style="margin-top:14px;gap:26px">
+    <div class="hero-fig r d2">
+      <img src="figs/barrido_df.svg" alt="Barrido de distancia por tamaño de neurona" style="max-height:400px">
+      <div class="figcap">Precisión vs. \(D/D_{\min}\) para \(d_f = 1\lambda,\,6\lambda,\,12\lambda\) (\(\sqrt{N} = 80\))</div>
+    </div>
+
+    <div class="stack r d3" style="gap:16px">
+      <div class="card" style="border-left:5px solid #1a7f37;padding:20px 22px">
+        <span class="pill ok">Proposición 4.1 confirmada</span>
+        <h3>Colapso exacto \(6\lambda \equiv 12\lambda\)</h3>
+        <p style="font-size:16px">Ambas curvas coinciden punto a punto (<b>88.4 %</b> en \(0.1\,D_{\min}\), pico <b>89.8 %</b> en \(0.3\,D_{\min}\)). Queda demostrado que el invariante físico que gobierna es \(N_{F,n} = \frac{d_f^2}{\lambda D}\).</p>
+      </div>
+      <div class="card" style="padding:20px 22px">
+        <span class="pill info">Transición real</span>
+        <h3>Funciona ya en \(0.1\,D_{\min}\)</h3>
+        <p style="font-size:16px">La transición ocurre entre \(0.03\) y \(0.1\,D_{\min}\) (\(1\lambda\) llega a <b>90.4 %</b>). En \(3\,D_{\min}\) baja a <b>86.4–88.6 %</b> por fuga de luz fuera de los bordes.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 26 · CONECTIVIDAD ACUMULADA (L = 1, 3, 5, 8) (0:25) -->
+<section class="slide mist act3" data-act="III · Resultados" data-notes="0:25 · [Gabriel Velázquez · DL/Cómputo] 👉 Curvas L=1..8 a la izquierda y diagrama de relevos arriba a la derecha. «La explicación es la conectividad acumulada: como la luz da L+1 saltos de aire —seis saltos con cinco placas—, no necesita cruzar toda la placa en un solo brinco; los conos se suman como una carrera de relevos y el umbral cae como 1/(L+1). En 0.03 D_mín subir de 1 a 8 placas dispara la precisión de 18.2 % a 75.2 %, y L=8 llega a 92.8 %, mientras una sola capa se estanca en 73 % por falta de grados de libertad.» → Sin haberle programado lentes, ¿qué talló el optimizador dentro del vidrio?">
+  <div class="eyebrow r">III · 4 — Barrido por número de placas (\(L \in \{1, 3, 5, 8\}\), \(d_f = 6\lambda\))</div>
+  <h2 class="r d1">Conectividad acumulada: <span class="grad-act">relevos en \(L+1\) saltos.</span></h2>
+
+  <div class="split w60" style="margin-top:14px;gap:24px;align-items:stretch">
+    <div class="hero-fig r d2">
+      <img src="figs/barrido_capas.svg" alt="Barrido de distancia para L = 1, 3, 5, 8 capas" style="max-height:400px">
+      <div class="figcap">Al sumar capas, el codo de transición se desplaza hacia la izquierda como \(1/(L+1)\)</div>
+    </div>
+
+    <div class="stack r d3" style="gap:12px;justify-content:space-between">
+      <div class="card sm" style="padding:12px 16px">
+        <div style="font-size:13.5px;font-weight:700;color:#515154;margin-bottom:6px">MÚLTIPLES SALTOS PEQUEÑOS SUMAN &gt; \(w\)</div>
+        <img src="figs/tikz_conectividad_acumulada.svg" alt="Conectividad acumulada en L+1 saltos" style="width:100%;max-height:105px;object-fit:contain;display:block">
+      </div>
+
+      <div class="card sm" style="padding:15px 18px">
+        <h3>Salto de precisión en \(0.03\,D_{\min}\)</h3>
+        <p style="font-size:15.5px">Sube de forma monótona al dar más saltos: <b>18.2 %</b> (\(L=1\)) &rarr; <b>36.4 %</b> (\(L=3\)) &rarr; <b>52.6 %</b> (\(L=5\)) &rarr; <b>75.2 %</b> (\(L=8\)).</p>
+      </div>
+
+      <div class="card sm" style="border-color:rgba(48,209,88,.45);padding:15px 18px">
+        <h3 style="color:#1a7f37">Capacidad expresiva</h3>
+        <p style="font-size:15.5px">Con \(L=1\), incluso en \(3\,D_{\min}\) se estanca en <b>73.0 %</b> (faltan perillas). Con \(L=8\) alcanza <b>92.8 %</b> en \(0.3\,D_{\min}\).</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 27 · ÓPTICA EMERGENTE: PLACAS ZONALES Y MICROLENTES (0:20) -->
+<section class="slide dark act3" data-act="III · Resultados" data-notes="0:20 · [Gabriel Velázquez · DL/Cómputo] 👉 Señala L1–L4 (anillos) y L5 (los 10 puntos del arreglo 3-4-3). «Al abrir las placas entrenadas nos llevamos una sorpresa increíble: jamás le dimos al código la ecuación de una lente ni de una rejilla, pero L1 a L4 inventaron solas patrones de anillos tipo placa zonal de Fresnel deformada, y L5 organizó una matriz de 10 microlentes apuntando directo a cada detector.» → Veamos cómo viaja el haz por en medio de estas placas.">
+  <div class="eyebrow r">III · 5 — Estructuras físicas aprendidas sin supervisión óptica</div>
+  <h2 class="r d1">Sin programarle óptica, <span class="grad-act">inventó placas zonales.</span></h2>
+
+  <div class="hero-fig r d2" style="margin-top:16px;padding:16px 24px">
+    <img src="figs/fases.png" alt="Mapas de fase entrenados L1 a L5" style="max-height:265px">
+    <div class="figcap">Fases aprendidas \(\Phi \in [0,\pi]\) en el Caso 2 (\(80\times 80\), abertura \(0.30\text{ mm}\)): clara división funcional entre L1–L4 y L5</div>
+  </div>
+
+  <div class="split r d3" style="margin-top:16px;gap:20px">
+    <div class="card" style="padding:18px 22px">
+      <span class="pill info">Capas L1 a L4</span>
+      <h3>Placas zonales y rejillas curvas</h3>
+      <p style="font-size:16px">Anillos cuasi-concéntricos de frecuencia creciente que capturan el haz del dígito, lo desvían sin dejarlo escapar por los bordes y separan sus componentes de Fourier.</p>
+    </div>
+    <div class="card" style="border-color:rgba(48,209,88,.45);padding:18px 22px">
+      <span class="pill act">Capa L5 (última máscara)</span>
+      <h3>Matriz de microlentes difractivas</h3>
+      <p style="font-size:16px">Organiza automáticamente <b>10 sub-aberturas focalizadoras</b> en la geometría exacta 3–4–3 de los detectores para concentrar la energía en la clase correcta.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 28 · CORTE AXIAL X-Z (0:15) -->
+<section class="slide light act3" data-act="III · Resultados" data-notes="0:15 · [Gabriel Velázquez · DL/Cómputo] 👉 Recorre la imagen de izquierda (z=0) a derecha (salida). «En esta radiografía lateral del eje óptico vemos un dígito 3 cruzando el sistema: primero se abre en abanico por difracción; entre L1 y L4 se canaliza mediante interferencia constructiva sin fugarse; y después de L5 converge justo en la coordenada del detector del 3.» → Si L5 enfoca con tanta precisión micrométrica, ¿qué pasa si movemos una placa un poquito?">
+  <div class="eyebrow r">III · 6 — Radiografía longitudinal del campo (corte \(x\text{--}z\) en \(y = 0\))</div>
+  <h2 class="r d1">Así viaja la energía <span class="grad-act">de capa en capa.</span></h2>
+
+  <div class="hero-fig r d2" style="margin-top:14px;padding:14px 20px">
+    <img src="figs/corte_xz.png" alt="Corte longitudinal x-z de la intensidad" style="max-height:345px">
+    <div class="figcap">Intensidad en el plano \(y = 0\) para un dígito 3 (las líneas punteadas marcan las 5 capas L1–L5)</div>
+  </div>
+
+  <div class="specs r d3" style="margin-top:14px">
+    <div class="spec" style="padding:14px 18px">
+      <div class="t">1. Entrada (\(z = 0\))</div>
+      <div class="l">La luz cruza el trazo del dígito 3 en la zona central y se abre en abanico por difracción hasta L1.</div>
+    </div>
+    <div class="spec" style="padding:14px 18px">
+      <div class="t">2. L1 a L4 (redirigir)</div>
+      <div class="l">Las placas zonales canalizan la energía en trayectorias oblicuas manteniéndola dentro del vidrio.</div>
+    </div>
+    <div class="spec" style="padding:14px 18px;border-color:rgba(48,209,88,.4)">
+      <div class="t" style="color:#1a7f37">3. Tras L5 (enfocar)</div>
+      <div class="l">Las microlentes concentran selectivamente el haz sobre el detector del 3 en el plano de salida.</div>
+    </div>
+  </div>
+</section>
+
+<!-- 29 · TOLERANCIAS DE FABRICACIÓN (1/2: ROBUSTAS) (0:20) -->
+<section class="slide mist act3" data-act="III · Resultados" data-notes="0:20 · [Gabriel Velázquez · DL/Cómputo] 👉 Señala el umbral de 8 niveles en (a) y la franja verde ±10 % en (b). «En el laboratorio de Chen et al. la precisión cayó de 91.6 % a 84 %. Probamos cuatro imperfecciones sin reentrenar para hallar la causa. Primero, lo que SÍ aguanta: en (a), usar apenas 8 escalones de altura —como bloques de Lego en 3 ciclos litográficos— conserva 88.2 % en 80² y 91.05 % en 1000². Y en (b), equivocarse ±10 % en la profundidad grabada casi no afecta. Ninguno explica el 84 %.» → Veamos los otros dos errores, que sí son críticos.">
+  <div class="eyebrow r">III · 7 — Tolerancias de fabricación (1/2): parámetros robustos</div>
+  <h2 class="r d1">8 escalones y &plusmn;10 % de grabado <span class="grad-act">casi no degradan.</span></h2>
+
+  <div class="hero-fig r d2" style="margin-top:14px;padding:14px 18px">
+    <img src="figs/fabricacion_robustas.svg" alt="Tolerancias de cuantización y profundidad" style="max-height:310px">
+  </div>
+
+  <div class="split r d3" style="margin-top:14px;gap:20px">
+    <div class="card" style="padding:16px 22px">
+      <span class="pill ok">(a) Cuantización de fase</span>
+      <h3>3 pasos litográficos (8 niveles) bastan</h3>
+      <p style="font-size:15.8px">Con 2 niveles colapsa (8.4 %); con 4 niveles baja a 54.0 % en \(80^2\). Pero <b>8 niveles</b> (\(98.9\text{ nm}\)/escalón) conservan <b>88.2 %</b> (\(80^2\)) y <b>91.05 %</b> (\(1000^2\)).</p>
+    </div>
+    <div class="card" style="padding:16px 22px">
+      <span class="pill ok">(b) Profundidad de grabado \(\Delta h\)</span>
+      <h3>Robusta ante \(\pm 10\%\) de error</h3>
+      <p style="font-size:15.8px">Un error de \(\pm 10\%\) en la altura grabada mantiene <b>88.8 %</b> en \(80^2\) y <b>89.65–91.70 %</b> en \(1000^2\). Estos dos efectos <b>no</b> explican la caída al 84 %.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 30 · TOLERANCIAS DE FABRICACIÓN (2/2: CRÍTICAS) (0:30) -->
+<section class="slide dark act3" data-act="III · Resultados" data-notes="0:30 · [Gabriel Velázquez · DL/Cómputo] 👉 Señala el punto de 1 neurona = 84 % en (c) y el pico verde estrecho en (d). «Aquí están los culpables reales. En (c), mover lateralmente las placas apenas una neurona —4 micras— derrumba la precisión a 83.9 % en 80² y 81.4 % en 1000²: eso explica exactamente el 84 % del laboratorio. Y el panel (d) da una advertencia clave: la tolerancia en la separación axial escala como 1/√N. En 1000² solo admite 50 µm (0.10 % de 5 cm), así que equivocarse apenas ±2 % (±1 mm) desploma la red al azar (12–15 %).»">
+  <div class="eyebrow r">III · 8 — Tolerancias de fabricación (2/2): el cuello de botella físico</div>
+  <h2 class="r d1">Cuatro micras <span class="grad-warm">lo cambian todo.</span></h2>
+
+  <div class="hero-fig r d2" style="margin-top:12px;padding:12px 16px">
+    <img src="figs/fabricacion_criticas.svg" alt="Tolerancias de alineación lateral y separación axial" style="max-height:295px">
+  </div>
+
+  <div class="split r d3" style="margin-top:12px;gap:20px">
+    <div class="card" style="border-left:5px solid #ff9f0a;padding:16px 20px">
+      <span class="pill warn">(c) Culpable del 84 % experimental</span>
+      <h3>Alineación lateral: 1 neurona (\(3.8\text{–}4\,\mu\text{m}\))</h3>
+      <p style="font-size:15.5px">Desviar 1 píxel cae a <b>83.9 %</b> (\(80^2\)) y <b>81.4 &plusmn; 3.5 %</b> (\(1000^2\)). Con 2 píxeles cae a <b>50.1 % / 38.4 %</b>, y con 3–5 llega al azar.</p>
+    </div>
+    <div class="card" style="border-left:5px solid #ff453a;padding:16px 20px">
+      <span class="pill bad">(d) Advertencia axial · \(\Delta D/D \propto 1/\sqrt{N}\)</span>
+      <h3>\(\Delta D \le \frac{2d_f^2}{\lambda} \approx 50.6\,\mu\text{m}\) (¡<b>0.10 %</b> de 50 mm!)</h3>
+      <p style="font-size:15.5px">Mientras \(80^2\) tolera 1.3 %, en \(1000^2\) un error de apenas <b>\(\pm 2\%\)</b> (\(\pm 1\text{ mm}\), \(20\times\) el límite) colapsa la precisión a <b>12.05–15.05 %</b>.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 31 · EFICIENCIA ENERGÉTICA η (0:15) -->
+<section class="slide light act3" data-act="III · Resultados" data-notes="0:15 · [Gabriel Velázquez · DL/Cómputo] 👉 Señala el punto rojo w=0 (1.6 %) y el salto al punto verde w=3 (18.6 %). «Medimos también cuánta luz cae dentro de las ventanitas detectoras. Como la pérdida original usa energía relativa, no premia aprovechar luz: solo 1.1 % en 1000² (y 1.6 % en Caso 2) llega a los detectores. Agregando una penalización w(1 − η) con w = 3 multiplicamos esa eficiencia 11× hasta 18.6 %, sacrificando apenas 3 puntos de precisión.» → Veamos finalmente la reproducción completa a escala real en GPU.">
+  <div class="eyebrow r">III · 9 — Eficiencia de detección \(\eta = \sum_k E_k / \iint |Y^{\text{sal}}|^2\)</div>
+  <h2 class="r d1">Concentrar luz: <span class="grad-act">de 1.6 % a 18.6 % (\(11\times\)).</span></h2>
+
+  <div class="split w60" style="margin-top:14px;gap:26px">
+    <div class="hero-fig r d2">
+      <img src="figs/eficiencia_eta.svg" alt="Compromiso precisión vs eficiencia energética eta" style="max-height:395px">
+      <div class="figcap">Pérdida \(\mathcal{L} + w(1-\eta)\) evaluada en el Caso 2 (\(80\times 80\), 20 épocas)</div>
+    </div>
+
+    <div class="stack r d3" style="gap:16px">
+      <div class="card" style="padding:18px 22px">
+        <span class="pill bad">Pérdida original (\(w = 0\))</span>
+        <h3>Solo 1.1–1.6 % cae en detectores</h3>
+        <p style="font-size:15.8px">Usar energía relativa (\(E_k/\sum E_j\)) solo exige que una ventanita gane a las demás: el resto de la luz cae fuera de los detectores (<b>1.1 %</b> en \(1000^2\)).</p>
+      </div>
+      <div class="card" style="border:1.5px solid rgba(48,209,88,.45);padding:18px 22px">
+        <span class="pill ok">Penalizando desperdicio (\(w = 3\))</span>
+        <h3>11&times; más señal óptica</h3>
+        <p style="font-size:15.8px">Subimos \(\eta\) de <b>1.6 % a 18.6 %</b> a cambio de solo 3.2 puntos (89.0 % &rarr; 85.8 %), crucial para superar ruido de fondo en un experimento real.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 32 · SISTEMA COMPLETO 1000x1000 EN GPU (0:30) -->
+<section class="slide mist act3" data-act="III · Resultados" data-notes="0:30 · [Gabriel Velázquez · DL/Cómputo] 👉 Señala la diagonal verde (90.63 %) y luego los números de RTX 5060 Ti. «Entrenamos la red exacta a escala real del paper en una RTX 5060 Ti: cinco placas de un millón de píxeles, 80,000 imágenes de entrenamiento y 11 clases (incluyendo rechazo X). Con 20.32 ms por imagen y 7.03 GiB de VRAM, cerramos 6 épocas en 2.93 horas —el doble de rápido por época que la GTX 1080 del artículo— alcanzando 90.63 % sobre 11,000 pruebas y 94.50 % en clase X.»">
+  <div class="eyebrow r">III · 10 — Sistema completo a escala real (\(1000 \times 1000\) neuronas, 11 clases)</div>
+  <h2 class="r d1">Un millón de píxeles <span class="grad-act">por placa: 90.63 %.</span></h2>
+
+  <div class="split w45" style="margin-top:12px;gap:26px;align-items:stretch">
+    <div class="hero-fig r d2" style="padding:12px 14px">
+      <img src="figs/confusion_full.svg" alt="Matriz de confusión 1000x1000" style="max-height:430px">
+      <div class="figcap">Matriz sobre 11 000 pruebas (10 000 dígitos 0–9 + 1 000 clase X)</div>
+    </div>
+
+    <div class="stack r d3" style="gap:14px;justify-content:center">
+      <div class="kpi-row">
+        <div class="kpi" style="background:#eefbf1;border-color:rgba(48,209,88,.45)">
+          <div class="val" style="color:#1a7f37">90.63<small style="font-size:.55em">%</small></div>
+          <div class="lbl"><b>Total (11 clases)</b><br>Paper: 91.57 % (20 ép.)</div>
+        </div>
+        <div class="kpi" style="background:#fff">
+          <div class="val" style="color:var(--ink)">90.24<small style="font-size:.55em">%</small></div>
+          <div class="lbl"><b>Dígitos 0–9</b><br>10 000 imgs. prueba</div>
+        </div>
+        <div class="kpi" style="background:#fff">
+          <div class="val" style="color:#0066cc">94.50<small style="font-size:.55em">%</small></div>
+          <div class="lbl"><b>Clase X</b><br>1 000 tapados/alterados</div>
+        </div>
+      </div>
+
+      <div class="card" style="padding:18px 22px">
+        <span class="pill info">Rendimiento GPU · RTX 5060 Ti (16 GiB)</span>
+        <h3>2.93 h para 6 épocas (20 004 pasos Adam)</h3>
+        <p style="font-size:15.8px">Mallas \(2000\times 2000\) en <code>complex64</code> con <code>--bs 24</code>: <b>7.03 GiB</b> VRAM pico y <b>20.32 ms/img</b> (<b>29.3 min/época</b> vs. &approx;1 h/época en GTX 1080 del paper).</p>
+      </div>
+
+      <div class="card" style="padding:16px 22px">
+        <h3>Comportamiento en prueba</h3>
+        <p style="font-size:15.5px">El dígito 1 logra la diagonal más alta; los pocos errores residuales suelen enviar dígitos ambiguos (como 2 o 5) al detector de rechazo <b>X</b>.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 33 · CLASE X EN ACCIÓN Y TECHO DE LINEALIDAD (0:25) -->
+<section class="slide light act3" data-act="III · Resultados" data-notes="0:25 · [Gabriel Velázquez · DL/Cómputo] 👉 Ejemplos a la izquierda, onda plana arriba derecha y tarjeta inferior. «Aquí vemos a la red trabajando: un 3 o 4 intacto enfoca en su detector, mientras sus versiones alterada o tapada desvían 50 a 73 % de energía a la caja X —y una onda plana vacía sin dígito manda ≈ 89 % directo a X. Y si nos preguntan por qué estas redes rondan el 91 % y no superan el 99 % de una CNN digital, la respuesta no es falta de épocas: es el techo físico de la linealidad estricta del campo óptico.» → Con esto pasamos a las cuatro conclusiones finales.">
+  <div class="eyebrow r">III · 11 — Clasificación selectiva y límite físico del modelo</div>
+  <h2 class="r d1">Rechazo automático X <span class="grad-act">y techo por linealidad.</span></h2>
+
+  <div class="split w55" style="margin-top:12px;gap:24px;align-items:stretch">
+    <div class="hero-fig r d2" style="padding:10px 14px">
+      <img src="figs/full_fig3_ejemplos.png" alt="Ejemplos 3 y 4 intactos vs alterados y tapados" style="max-height:425px">
+      <div class="figcap">Dígito 3 y 4 intactos vs. alterado/tapado: estos redirigen <b>50–73 %</b> al detector X</div>
+    </div>
+
+    <div class="stack r d3" style="gap:14px;justify-content:space-between">
+      <div class="hero-fig" style="padding:10px 14px">
+        <img src="figs/full_fig5_onda_plana.png" alt="Onda plana sin dígito dirigida a detector X" style="max-height:205px">
+        <div class="figcap" style="margin-top:6px"><b>Onda plana vacía:</b> desvía <b>&approx; 89 %</b> directo al detector X</div>
+      </div>
+
+      <div class="eq-card" style="background:#fff7e8;border-color:rgba(255,159,10,.55);border-left-color:#ff9f0a;padding:16px 20px">
+        <div class="eq-title" style="color:#b25900;font-size:16.5px">¿Por qué ~91 % y no &gt;99 % como una CNN?</div>
+        <p style="font-size:15.5px;color:#515154;line-height:1.42">No es falta de épocas (el aprendizaje ya converge en la época 6: \(79.1\% \to 90.63\%\)). Es el límite impuesto por la <b>linealidad estricta</b> \(Y^{\text{sal}} = \mathcal{M}Y^{\text{ent}}\) sin activaciones no lineales entre vidrios.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 34 · CONCLUSIONES (0:30) -->
+<section class="slide dark closing center" data-notes="0:30 · [Cierre conjunto] Alonso Hernández (tarjetas 1–2, 0:15): «En física y matemáticas demostramos que Fraunhofer/Fresnel fallan (N_F≈126, 9.7 rad), el factor 2 nace de Nyquist, y D_mín más N_{F,n} unifican la geometría.» Gabriel Velázquez (tarjetas 3–4, 0:15): «Computacionalmente validamos D_mín ≡ z_c y Wirtinger a 10^-16, logrando 90.63 % en 1000² donde emergen placas zonales y la tolerancia de 4 µm domina el montaje. Muchas gracias, atentos a sus preguntas.»">
+  <div class="eyebrow r">Conclusiones · Para llevarse</div>
+  <h2 class="r d1">La difracción<br><span class="grad-warm">también calcula.</span></h2>
+
+  <div class="quad r d2">
+    <div class="q" style="border-top-color:#ff453a">
+      <div class="t">Campo cercano exacto</div>
+      <p>Con \(N_F \approx 126\) y errores de fase de hasta 9.7 rad, fallan Fraunhofer y Fresnel: se necesita espectro angular exacto.</p>
+    </div>
+    <div class="q" style="border-top-color:#ff9f0a">
+      <div class="t">Física = muestreo</div>
+      <p>\(\varphi_{\max}\) sale de Nyquist, \(D_{\min} \equiv z_c\) une física y simulación, y la conectividad escala como \(N_{F,n}\) y \(1/(L+1)\).</p>
+    </div>
+    <div class="q" style="border-top-color:#2997ff">
+      <div class="t">Óptica emergente</div>
+      <p>El ajuste holográfico hace surgir <b>placas zonales y microlentes</b>, logrando <b>90.63 %</b> en \(1000\times 1000\) (94.50 % en clase X).</p>
+    </div>
+    <div class="q" style="border-top-color:#30d158">
+      <div class="t">Límites físicos</div>
+      <p>La linealidad del campo topa la precisión cerca de 91 %, y la <b>alineación (1 neurona)</b> más \(\Delta D/D \propto 1/\sqrt{N}\) dominan el montaje.</p>
+    </div>
+  </div>
+
+  <div class="meta r d3" style="margin-top:30px;font-size:15.5px;color:#a1a1a6;line-height:1.6">
+    <b style="color:#f5f5f7">Gracias por su atención</b> · ¿Preguntas?<br>
+    Código, tesina y simulaciones: <b style="color:#f5f5f7">github.com/AngelGab3/Final_Project_Optics_Difractive_Neural_Networks</b>
+  </div>
+</section>
+
+</div></div>
+
+<!-- Notas del presentador (tecla N) -->
+<div class="notes" id="notesBox">
+  <div class="nt" id="notesTitle">Notas del presentador</div>
+  <div id="notesText"></div>
+</div>
+
+<!-- HUD inferior -->
+<div class="hud" id="hud">
+  <button id="prevBtn" title="Anterior (←)">&larr;</button>
+  <span id="counter">1 / 34</span>
+  <button id="nextBtn" title="Siguiente (→)">&rarr;</button>
+  <button id="notesBtn" title="Notas (N)">Notas</button>
+  <button id="fsBtn" title="Pantalla completa (F)">Pantalla completa</button>
+</div>
+
+<script>
+  const deck = document.getElementById('deck');
+  const slides = [...document.querySelectorAll('.slide')];
+  const counter = document.getElementById('counter');
+  const notesBox = document.getElementById('notesBox');
+  const notesTitle = document.getElementById('notesTitle');
+  const notesText = document.getElementById('notesText');
+  const crumb = document.getElementById('crumb');
+  const crumbDot = document.getElementById('crumbDot');
+  const crumbTxt = document.getElementById('crumbTxt');
+  const pf1 = document.getElementById('pf1');
+  const pf2 = document.getElementById('pf2');
+  const pf3 = document.getElementById('pf3');
+  let cur = 0;
+
+  // Genera numeración dinámica por diapositiva (omitida en portada)
+  slides.forEach((el, idx) => {
+    if (idx === 0) return;
+    const n = document.createElement('div');
+    n.className = 'slide-num';
+    n.textContent = `${idx + 1} / ${slides.length}`;
+    el.appendChild(n);
+  });
+
+  // Índices de bloques para la barra de 3 segmentos
+  const actIdx = { act1: [], act2: [], act3: [] };
+  slides.forEach((el, idx) => {
+    if (el.classList.contains('act1')) actIdx.act1.push(idx);
+    else if (el.classList.contains('act2')) actIdx.act2.push(idx);
+    else if (el.classList.contains('act3')) actIdx.act3.push(idx);
+  });
+
+  function segPct(arr, i) {
+    if (!arr.length) return 0;
+    const first = arr[0], last = arr[arr.length - 1];
+    if (i < first) return 0;
+    if (i > last) return 100;
+    return ((i - first + 1) / (last - first + 1)) * 100;
+  }
+
+  function fit(){
+    const s = Math.min(window.innerWidth / 1280, window.innerHeight / 720);
+    deck.style.transform = `scale(${s})`;
+  }
+  window.addEventListener('resize', fit);
+  fit();
+
+  function show(i){
+    cur = Math.max(0, Math.min(slides.length - 1, i));
+    slides.forEach((el, idx) => el.classList.toggle('active', idx === cur));
+
+    const s = slides[cur];
+    pf1.style.width = `${segPct(actIdx.act1, cur)}%`;
+    pf2.style.width = `${segPct(actIdx.act2, cur)}%`;
+    pf3.style.width = `${segPct(actIdx.act3, cur)}%`;
+
+    const actName = s.dataset.act || '';
+    const isDiv = s.dataset.divider === 'true';
+    if (actName && !isDiv) {
+      crumbTxt.textContent = actName;
+      crumbDot.style.background = s.classList.contains('act1') ? '#ff9f0a'
+        : s.classList.contains('act2') ? '#2997ff' : '#30d158';
+      crumb.classList.add('on');
+    } else {
+      crumb.classList.remove('on');
+    }
+
+    counter.textContent = `${cur + 1} / ${slides.length}`;
+    notesTitle.textContent = `Diapositiva ${cur + 1} de ${slides.length}`;
+    notesText.textContent = s.dataset.notes || '';
+  }
+
+  document.getElementById('prevBtn').onclick = () => show(cur - 1);
+  document.getElementById('nextBtn').onclick = () => show(cur + 1);
+  document.getElementById('notesBtn').onclick = () => notesBox.classList.toggle('on');
+  document.getElementById('fsBtn').onclick = () => {
+    if (!document.fullscreenElement) document.documentElement.requestFullscreen?.();
+    else document.exitFullscreen?.();
+  };
+
+  window.addEventListener('keydown', e => {
+    if (['ArrowRight','PageDown',' '].includes(e.key)) { e.preventDefault(); show(cur + 1); }
+    else if (['ArrowLeft','PageUp'].includes(e.key)) { e.preventDefault(); show(cur - 1); }
+    else if (e.key === 'Home') show(0);
+    else if (e.key === 'End') show(slides.length - 1);
+    else if (e.key.toLowerCase() === 'n') notesBox.classList.toggle('on');
+    else if (e.key.toLowerCase() === 'f') document.getElementById('fsBtn').click();
+  });
+
+  show(0);
+
+  function runKatex() {
+    if (window.renderMathInElement) {
+      renderMathInElement(document.body, {
+        delimiters: [
+          { left: '\\[', right: '\\]', display: true },
+          { left: '\\(', right: '\\)', display: false }
+        ],
+        throwOnError: false
+      });
+    } else {
+      setTimeout(runKatex, 60);
+    }
+  }
+  if (document.readyState === 'loading') {
+    window.addEventListener('DOMContentLoaded', runKatex);
+  } else {
+    runKatex();
+  }
+</script>
+</body>
+</html>

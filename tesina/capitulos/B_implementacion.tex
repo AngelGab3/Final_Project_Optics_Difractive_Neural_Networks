@@ -1,0 +1,110 @@
+% =====================================================================
+\chapter{Detalles de implementación}\label{ap:implementacion}
+% =====================================================================
+
+\section{Algoritmo de entrenamiento}
+
+\begin{algorithm}[htb]
+\caption{Entrenamiento de la D\textsuperscript{2}NN}\label{alg:entrenamiento}
+\begin{algorithmic}[1]
+\Require imágenes $\{(X_b,y_b)\}$, parámetros $\theta^1,\dots,\theta^L$, tasa $\eta=10^{-3}$
+\State Calcular $H(u,v;D)$ en doble precisión, con el límite de banda \eqref{eq:flim}
+\For{época $=1,\dots,20$}
+  \For{cada lote $(X,y)$}
+    \State $Y\gets$ codificar $X$ como amplitud (binaria) en el plano de entrada
+    \State $Y\gets\mathcal{P}_D\{Y\}$
+    \For{$l=1,\dots,L$}
+       \State $\Phi^l\gets\pi\,\sigma(\theta^l)$;\quad $Y\gets\mathcal{P}_D\{Y\circ e^{\jj\Phi^l}\}$
+       \Comment{\cref{eq:capa-a-capa}}
+    \EndFor
+    \State $E_k\gets\sum_{i\in\text{det}_k}|Y_i|^2$;\quad $\mathcal{L}\gets$ \cref{eq:perdida}
+    \State $\partial\mathcal{L}/\partial\theta^l\gets$ retropropagación (\cref{sec:gradiente})
+    \State $\theta^l\gets\mathrm{Adam}(\theta^l,\partial\mathcal{L}/\partial\theta^l,\eta)$
+  \EndFor
+\EndFor
+\Ensure fases $\Phi^l=\pi\sigma(\theta^l)$ y alturas $\Delta h^l=\lambda\Phi^l/(2\pi\Delta n)$
+\end{algorithmic}
+\end{algorithm}
+
+\section{Decisiones no especificadas en el artículo}
+
+\begin{table}[htb]
+\centering
+\caption{Decisiones de la reproducción en aspectos que \textcite{chen2021} no especifican.}
+\label{tab:decisiones}
+\begin{tabularx}{\textwidth}{@{}>{\raggedright}p{4.2cm}X@{}}
+\toprule
+Aspecto & Elección en este trabajo\\
+\midrule
+Propagador & Espectro angular de banda limitada \parencite{matsushima2009}, relleno al doble, $H$ en doble precisión\\
+Tamaño finito de las capas & El campo se recorta a $w\times w$ después de cada propagación\\
+Distancias entrada--L1 y L5--salida & Iguales a $D$\\
+Codificación de la entrada & Dígito MNIST escalado (vecino más cercano) al \SI{70}{\percent} del lado y binarizado, como máscara de cromo\\
+Detectores & Cuadrados del \SI{5}{\percent} del lado con el arreglo de la Fig.~3(b) del artículo (11 clases); arreglo 3--4--3 del \SI{8}{\percent} para la Fig.~6\\
+Pérdida & Entropía cruzada con softmax sobre la energía relativa, temperatura $T=10$ (\cref{eq:perdida})\\
+Inicialización & $\theta\sim\mathcal N(0,0.1^2)$, es decir $\Phi\approx\pi/2$\\
+Dígitos cambiados (clase X) & No publicados. Se generan: \SI{50}{\percent} tapados (un rectángulo borra entre el 25 y el \SI{65}{\percent} del trazo) y \SI{50}{\percent} alterados (2 o 3 trazos adicionales)\\
+Caso 3 de la Fig.~6 & Se simulan los dos valores de $D$ que aparecen en el artículo\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{Reproducibilidad}
+
+El código, los resultados y este documento están en el repositorio del proyecto
+\parencite{repo2026}. Los pasos para reproducir cada resultado son:
+\begin{lstlisting}[language=bash,numbers=none]
+python -m pytest -q tests                      # pruebas unitarias
+python scripts/01_validate_optics.py            # capítulo 5
+python scripts/02_fig6_cases.py                 # sección 6.1
+python scripts/03_connectivity_sweep.py --device cuda --epochs 20
+python scripts/03_connectivity_sweep.py --device cuda --epochs 20 --layers 1 3 5 8
+python scripts/07_check_gradient.py             # tabla 3.2
+python scripts/05_evaluate.py results/02_fig6/fig6_case2/model.pt
+python scripts/06_fabrication_errors.py results/02_fig6/fig6_case2/model.pt
+python scripts/04_train_full.py --epochs 6 --bs 24 --max-minutes 185  # sistema completo (GPU)
+python scripts/05_evaluate.py results/04_full/paper_full/model.pt --bs 24
+python scripts/06_fabrication_errors.py results/04_full/paper_full/model.pt --bs 24
+\end{lstlisting}
+
+\section{Equipo de cómputo y rendimiento}\label{sec:hardware}
+
+Las simulaciones aceleradas por GPU se ejecutaron en una estación de trabajo equipada con una
+tarjeta gráfica \textbf{NVIDIA GeForce RTX 5060 Ti} de \SI{16}{GiB} de VRAM (arquitectura
+Blackwell, capacidad de cómputo \texttt{sm\_120}, controlador \texttt{615.71.09}) utilizando
+\texttt{PyTorch 2.10.0+cu128} con soporte nativo para CUDA~12.8.
+
+Para seleccionar el tamaño de lote óptimo en el modelo completo ($N = 1000\times 1000$
+neuronas, malla rellenada de $2000\times 2000$ puntos complejos en precisión simple
+\texttt{complex64} y 5 capas difractivas sin \emph{gradient checkpointing}), se ejecutó el
+banco de pruebas \texttt{scripts/benchmark.py} (\cref{tab:benchmark}).
+
+\begin{table}[htb]
+\centering
+\caption{Rendimiento y consumo de VRAM por tamaño de lote en la RTX 5060 Ti (\SI{16}{GiB}) para el modelo de $1000\times 1000$ neuronas.}
+\label{tab:benchmark}
+\begin{tabular}{@{}cccccc@{}}
+\toprule
+Lote & ms/iteración & ms/imagen & Época (\num{80000} img.) & 20 épocas & VRAM pico (\si{GiB})\\
+\midrule
+16 & 332.6 & 20.78 & \SI{27.7}{min} & \SI{9.24}{h} & 4.77\\
+\textbf{24} & \textbf{487.6} & \textbf{20.32} & \textbf{\SI{27.1}{min}} & \textbf{\SI{9.03}{h}} & \textbf{7.03}\\
+32 & 660.2 & 20.63 & \SI{27.5}{min} & \SI{9.17}{h} & 9.30\\
+48 & \multicolumn{5}{c}{Excede la VRAM disponible (\emph{CUDA out of memory})}\\
+64 & \multicolumn{5}{c}{Excede la VRAM disponible (\emph{CUDA out of memory})}\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+El tamaño de lote \texttt{--bs 24} ofrece el mayor rendimiento efectivo
+(\SI{20.32}{ms/imagen}, \SI{487.6}{ms/iteración} y \SI{27.1}{min} por época completa de
+\num{80000} imágenes) consumiendo \SI{7.03}{GiB} de VRAM pico, menos de la mitad de la memoria
+disponible en la GPU. Con \texttt{--bs 32} el tiempo por imagen se satura ligeramente
+(\SI{20.63}{ms/imagen}, \SI{9.30}{GiB}), mientras que a partir de \texttt{--bs 48} las FFT
+complejas de $2000\times 2000$ sobrepasan los \SI{15.56}{GiB} útiles de la tarjeta.
+
+En la corrida final del sistema completo (\texttt{--epochs 6 --bs 24}), cada época completa
+—incluyendo la evaluación sobre las \num{11000} imágenes de prueba y el guardado atómico del
+punto de control— tomó en promedio \SI{29.3}{min}, completando las 6 épocas (\num{20004}
+actualizaciones de Adam) en \SI{10537}{s} (\SI{2}{h} \SI{56}{min}) hasta alcanzar una
+precisión de prueba de \SI{90.63}{\percent}.

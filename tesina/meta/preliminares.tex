@@ -1,0 +1,91 @@
+% =====================================================================
+%  Páginas preliminares
+% =====================================================================
+\chapter*{Resumen}
+\addcontentsline{toc}{chapter}{Resumen}
+
+Las redes neuronales difractivas profundas (D\textsuperscript{2}NN) realizan una tarea de
+clasificación únicamente con luz coherente que atraviesa una pila de máscaras de fase
+separadas por propagación libre. En este trabajo se reproduce numéricamente el diseño de
+\textcite{chen2021}, que lleva este concepto de los terahertz al visible
+($\lambda=\SI{632.8}{nm}$), y se deducen paso a paso las ecuaciones que el artículo
+presenta sin demostración: el espectro angular a partir de la ecuación de Helmholtz, el
+semiángulo de difracción de una neurona y el criterio de conectividad entre capas.
+Además, se calcula de forma explícita el gradiente mediante cálculo de Wirtinger y se
+muestra que corresponde a retropropagar la señal de error en sentido inverso. Se demuestra que
+el criterio de conectividad coincide exactamente con la condición de muestreo
+del método de espectro angular de banda limitada, y que en el régimen paraxial su variable
+relevante es el número de Fresnel neuronal $N_{F,n}$. La simulación reproduce los casos de
+prueba reducidos (\SIrange{89}{91}{\percent}), identifica dos inconsistencias en el artículo y
+demuestra mediante barridos sistemáticos en GPU ($L\in\{1,3,5,8\}$) que el criterio es unas
+diez veces más estricto de lo necesario porque la conectividad se acumula en $L+1$ etapas.
+Finalmente, el entrenamiento en GPU del sistema completo de $1000\times1000$ neuronas y
+11 clases alcanza \SI{90.63}{\percent} en prueba (\SI{90.24}{\percent} en dígitos y
+\SI{94.50}{\percent} en clase~X), y se cuantifican las tolerancias de fabricación en ocho
+niveles de fase, desalineación lateral y separación axial.
+
+\medskip\noindent\textbf{Palabras clave:} difracción escalar, espectro angular, redes
+neuronales difractivas, computación óptica, muestreo.
+
+\begin{otherlanguage}{english}
+\chapter*{Abstract}
+\addcontentsline{toc}{chapter}{Abstract}
+Diffractive deep neural networks (D\textsuperscript{2}NNs) perform classification using only
+coherent light propagating through a stack of phase masks. This work numerically
+reproduces the visible-light design of \textcite{chen2021} at $\lambda=\SI{632.8}{nm}$ and
+derives, step by step, the equations that the original article states without proof: the
+angular spectrum from the Helmholtz equation, the diffraction half-angle of a neuron, and the
+inter-layer connectivity criterion. The training gradient is derived via Wirtinger calculus
+and shown to correspond to back-propagating the error field. The connectivity criterion is
+proven to coincide with the sampling condition of the band-limited angular spectrum method,
+and in the paraxial regime its governing parameter is the single-neuron Fresnel number
+$N_{F,n}$. Numerical simulations reproduce the reduced benchmark cases (89--91\,\%), identify
+two inconsistencies in the paper, and show through GPU sweeps across $L\in\{1,3,5,8\}$ layers
+that the criterion is roughly ten times stricter than necessary due to cumulative diffractive
+mixing across $L+1$ stages. Training the full $1000\times1000$-neuron, 11-class visible-light
+system achieves 90.63\,\% test accuracy (90.24\,\% on digits 0--9 and 94.50\,\% on altered or
+occluded class-X inputs), and fabrication tolerances are quantified for phase quantization,
+lateral misalignment, and axial spacing.
+
+\medskip\noindent\textbf{Keywords:} scalar diffraction, angular spectrum, diffractive neural
+networks, optical computing, sampling.
+\end{otherlanguage}
+
+\tableofcontents
+\listoffigures
+\listoftables
+
+\chapter*{Lista de símbolos}
+\addcontentsline{toc}{chapter}{Lista de símbolos}
+\begin{center}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabularx}{\textwidth}{@{}l X l@{}}
+\toprule
+Símbolo & Significado & Valor en el sistema del artículo \\
+\midrule
+$\lambda$ & Longitud de onda en el vacío & \SI{632.8}{nm} (He--Ne)\\
+$k$ & Número de onda, $2\pi/\lambda$ & \SI{9.93e6}{m^{-1}}\\
+$U(x,y,z)$ & Amplitud compleja escalar del campo & --- \\
+$u,\,v$ & Frecuencias espaciales en $x$ y $y$ & --- \\
+$\alpha,\beta,\gamma$ & Ángulos del vector de onda con los ejes $x,y,z$ & --- \\
+$H(u,v)$ & Función de transferencia de la propagación libre & --- \\
+$d_f$ & Tamaño (lado) de una neurona & \SI{4}{\micro m}\\
+$\sqrt N$ & Neuronas por lado de una capa & \num{1000}\\
+$w$ & Lado de una capa, $w=\sqrt N\,d_f$ & \SI{4}{mm}\\
+$D$ & Distancia entre capas consecutivas & \SI{\approx 5}{cm}\\
+$L$ & Número de capas difractivas & 5\\
+$\Phi^l_i$ & Fase de la neurona $i$ de la capa $l$ & $[0,\pi]$\\
+$t^l$ & Transmitancia compleja de la capa $l$, $e^{\jj\Phi^l}$ & --- \\
+$\varphi_{\max}$ & Semiángulo máximo de difracción de una neurona & \ang{4.54}\\
+$\Dmin$ & Distancia mínima para conectividad total (Ec.~9 del artículo) & \SI{50.4}{mm}\\
+$\Delta x$ & Paso de la malla numérica (aquí $\Delta x=d_f$) & \SI{4}{\micro m}\\
+$N_p$ & Muestras por lado de la malla con relleno, $N_p=2\sqrt N$ & \num{2000}\\
+$\Delta u$ & Paso en frecuencia, $1/(N_p\Delta x)$ & \SI{125}{m^{-1}}\\
+$z_c$ & Distancia crítica del espectro angular sin límite de banda & \SI{50.6}{mm}\\
+$\flim$ & Frecuencia límite del espectro angular de banda limitada & --- \\
+$N_F$ & Número de Fresnel & --- \\
+$E_k$ & Energía recogida por el detector $k$ & --- \\
+$\Delta n$ & Diferencia de índice entre sustrato y aire & 0.457 (SiO$_2$)\\
+\bottomrule
+\end{tabularx}
+\end{center}

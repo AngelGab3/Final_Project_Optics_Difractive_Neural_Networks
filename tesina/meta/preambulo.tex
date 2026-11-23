@@ -1,0 +1,114 @@
+% =====================================================================
+%  Preámbulo de la tesina
+% =====================================================================
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[english,spanish.tabla.noshorthands.nodecimaldot.noquoting.lcroman]{babel}
+\usepackage{lmodern}
+\usepackage[final]{microtype}
+\usepackage{csquotes}
+
+% --- Página -----------------------------------------------------------
+\usepackage[letterpaper,top=2.5cm,bottom=2.5cm,inner=3cm,outer=2.5cm]{geometry}
+\setkomafont{disposition}{\normalcolor\bfseries}
+\setkomafont{chapter}{\color{udlap}\bfseries\huge}
+\setkomafont{section}{\color{udlaposcuro}\bfseries\Large}
+\usepackage{scrlayer-scrpage}
+\pagestyle{scrheadings}
+\clearpairofpagestyles
+\ohead{\headmark}
+\ofoot*{\pagemark}
+\automark[section]{chapter}
+
+% --- Colores UDLAP ------------------------------------------------------
+\usepackage{xcolor}
+\definecolor{udlap}{HTML}{F37B20}        % naranja del logo
+\definecolor{udlaposcuro}{HTML}{9A4A0E}
+\definecolor{udlapclaro}{HTML}{FDEBDD}
+\definecolor{gris}{HTML}{6B6B6B}
+\definecolor{azulfig}{HTML}{2C6FB7}
+
+% --- Matemáticas y unidades -------------------------------------------
+\usepackage{amsmath,amssymb,amsthm,mathtools,bm}
+\usepackage{esint}
+\usepackage{siunitx}
+\sisetup{output-decimal-marker={.},group-separator={\,},per-mode=symbol,
+         range-phrase={--},list-final-separator={ y }}
+\numberwithin{equation}{chapter}
+\newcommand{\dd}{\,\mathrm{d}}
+\newcommand{\jj}{\mathrm{j}}
+\newcommand{\FT}{\mathcal{F}}
+\newcommand{\IFT}{\mathcal{F}^{-1}}
+\newcommand{\rect}{\operatorname{rect}}
+\newcommand{\sinc}{\operatorname{sinc}}
+\newcommand{\Real}{\operatorname{Re}}
+\newcommand{\Imag}{\operatorname{Im}}
+\newcommand{\Dmin}{D_{\min}}
+\newcommand{\flim}{f_{\lim}}
+\DeclareMathOperator*{\argmax}{arg\,max}
+
+\theoremstyle{definition}
+\newtheorem{definicion}{Definición}[chapter]
+\theoremstyle{plain}
+\newtheorem{proposicion}{Proposición}[chapter]
+\renewcommand{\qedsymbol}{$\blacksquare$}
+
+% --- Figuras, tablas, diagramas ---------------------------------------
+\usepackage{graphicx}
+\graphicspath{{figuras/}}
+\usepackage{booktabs,multirow,array,tabularx}
+\usepackage[font=small,labelfont={bf,color=udlaposcuro},format=hang]{caption}
+\usepackage{subcaption}
+\usepackage{tikz}
+\usetikzlibrary{calc,arrows.meta,decorations.pathreplacing,decorations.pathmorphing,
+                patterns,positioning,shapes.geometric,3d,fit,backgrounds}
+\usepackage{tikz-3dplot}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\usepgfplotslibrary{fillbetween}
+
+% --- Algoritmos y código -----------------------------------------------
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\floatname{algorithm}{Algoritmo}
+\renewcommand{\listalgorithmname}{Lista de algoritmos}
+\algrenewcommand\algorithmicrequire{\textbf{Entrada:}}
+\algrenewcommand\algorithmicensure{\textbf{Salida:}}
+\usepackage{listings}
+\lstset{basicstyle=\ttfamily\footnotesize,breaklines=true,frame=single,
+        rulecolor=\color{gris},keywordstyle=\color{udlaposcuro}\bfseries,
+        commentstyle=\color{gris}\itshape,numbers=left,numberstyle=\tiny\color{gris},
+        literate={á}{{\'a}}1 {é}{{\'e}}1 {í}{{\'i}}1 {ó}{{\'o}}1 {ú}{{\'u}}1 {ñ}{{\~n}}1}
+
+% --- Cajas ---------------------------------------------------------------
+\usepackage[most]{tcolorbox}
+% Recuadro para resultados clave
+\newtcolorbox{resultado}[1]{colback=white,colframe=udlaposcuro,fonttitle=\bfseries,
+  title={#1},breakable}
+% Recuadro para cálculos numéricos detallados
+\newtcolorbox{calculo}[1][]{colback=gray!6,colframe=gray!60,fonttitle=\bfseries\small,
+  title={Cálculo: #1},fontupper=\small,breakable}
+
+% --- Bibliografía APA 7 -------------------------------------------------
+\usepackage[style=apa,backend=biber]{biblatex}
+\addbibresource{referencias.bib}
+
+% --- Enlaces (al final) -------------------------------------------------
+\usepackage[hidelinks,pdfusetitle]{hyperref}
+\usepackage[spanish,noabbrev]{cleveref}
+\crefname{equation}{la ecuación}{las ecuaciones}
+\Crefname{equation}{La ecuación}{Las ecuaciones}
+\crefname{figure}{la figura}{las figuras}
+\Crefname{figure}{La figura}{Las figuras}
+\crefname{table}{la tabla}{las tablas}
+\Crefname{table}{La tabla}{Las tablas}
+\crefname{chapter}{capítulo}{capítulos}
+\Crefname{chapter}{Capítulo}{Capítulos}
+\crefname{section}{sección}{secciones}
+\Crefname{section}{Sección}{Secciones}
+\crefname{subsection}{sección}{secciones}
+\crefname{appendix}{apéndice}{apéndices}
+\crefname{algorithm}{el algoritmo}{los algoritmos}
+\Crefname{algorithm}{El algoritmo}{Los algoritmos}
+\crefname{proposicion}{la proposición}{las proposiciones}
+\Crefname{proposicion}{La proposición}{Las proposiciones}
